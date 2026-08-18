@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Meet Deck einrichten</title>
+    <link rel="stylesheet" href="onboarding.css" />
+  </head>
+  <body>
+    <main>
+      <header>
+        <span class="eyebrow">Meet Deck · annonator</span>
+        <h1>Dein Meeting bleibt in deinem Browser.</h1>
+        <p class="lead">
+          Meet Deck verbindet Google Meet und Stream Deck ausschließlich über localhost. Keine
+          Cloud, keine Telemetrie, keine Meeting-Inhalte.
+        </p>
+      </header>
+
+      <ol class="steps">
+        <li>
+          <span class="step-number">1</span>
+          <div>
+            <h2>Stream-Deck-Plugin installieren</h2>
+            <p>Installiere das OSS-Plugin und ziehe eine Meet-Deck-Aktion auf eine LCD-Taste.</p>
+          </div>
+        </li>
+        <li>
+          <span class="step-number">2</span>
+          <div>
+            <h2>Pairing öffnen</h2>
+            <p>
+              Erzeuge im Property Inspector einen achtstelligen Code. Er ist nur kurz gültig und
+              funktioniert nur lokal.
+            </p>
+          </div>
+        </li>
+        <li>
+          <span class="step-number">3</span>
+          <div>
+            <h2>Extension verbinden</h2>
+            <p>
+              Klicke auf das Meet-Deck-Symbol in Chrome und gib den Code ein. Chrome kann einmalig
+              nach Zugriff auf Geräte im lokalen Netzwerk fragen.
+            </p>
+          </div>
+        </li>
+      </ol>
+
+      <section class="privacy">
+        <h2>Was die Extension verarbeitet</h2>
+        <div class="privacy-grid">
+          <article>
+            <strong>Ja</strong>
+            <p>
+              Mikrofon, Kamera, Hand und eigener Präsentationsstatus – ausschließlich als endliche
+              Zustände.
+            </p>
+          </article>
+          <article>
+            <strong>Nein</strong>
+            <p>
+              Keine Meeting-URL, Codes, Titel, Namen, Chats, Untertitel, Audio-, Video- oder
+              Bildschirmdaten.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <button id="open-popup" type="button">Meet Deck in der Toolbar öffnen</button>
+      <p id="onboarding-status" class="status" aria-live="polite"></p>
+    </main>
+    <script src="onboarding.js"></script>
+  </body>
+</html>

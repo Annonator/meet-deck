@@ -1,0 +1,23 @@
+{
+  "name": "@meet-deck/streamdeck-plugin",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build": "rollup -c",
+    "watch": "rollup -c -w --watch.onEnd=\"streamdeck restart dev.annonator.meet-deck\"",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "validate": "streamdeck validate dev.annonator.meet-deck.sdPlugin --no-update-check",
+    "pack": "node ./scripts/pack.mjs"
+  },
+  "dependencies": {
+    "@elgato/streamdeck": "^2.1.2",
+    "@meet-deck/protocol": "0.1.0",
+    "ws": "^8.19.0"
+  }
+}

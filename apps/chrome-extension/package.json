@@ -1,0 +1,32 @@
+{
+  "name": "@meet-deck/chrome-extension",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "author": "annonator",
+  "license": "MIT",
+  "scripts": {
+    "build": "node ./scripts/build.mjs",
+    "dev": "rollup --config --watch",
+    "lint": "tsc --noEmit",
+    "pack": "npm run build && node ./scripts/package.mjs",
+    "package": "npm run pack",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@meet-deck/protocol": "0.1.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^16.0.3",
+    "@rollup/plugin-typescript": "^12.3.0",
+    "@types/chrome": "^0.2.6",
+    "@types/node": "^24.13.3",
+    "jsdom": "^29.1.1",
+    "rollup": "^4.62.4",
+    "tslib": "^2.8.1",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.10"
+  }
+}

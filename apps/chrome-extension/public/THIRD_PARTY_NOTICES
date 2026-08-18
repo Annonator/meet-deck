@@ -1,0 +1,7 @@
+Meet Deck Chrome Extension - Third-Party Notices
+
+The release bundle contains @meet-deck/protocol, which is part of the Meet Deck
+project and is distributed under the MIT License included with this package.
+
+The extension has no other runtime JavaScript dependencies. Build and test
+tools are development-only and are not included in this release bundle.

@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Meet Deck</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main class="panel">
+      <header class="brand">
+        <span class="brand__mark" aria-hidden="true">MD</span>
+        <div>
+          <h1>Meet Deck</h1>
+          <p>Local. Open Source. Ohne Meeting-Inhalte.</p>
+        </div>
+      </header>
+
+      <section class="status-card" aria-labelledby="connection-heading">
+        <div class="status-row">
+          <span id="status-dot" class="status-dot status-dot--offline" aria-hidden="true"></span>
+          <div>
+            <h2 id="connection-heading">Verbindung</h2>
+            <p id="connection-status" aria-live="polite">Status wird geladen …</p>
+          </div>
+        </div>
+        <p id="meeting-status" class="meeting-status">Kein steuerbares Meeting erkannt.</p>
+      </section>
+
+      <form id="pair-form" class="form" novalidate>
+        <label for="pair-code">Pairing-Code aus Stream Deck</label>
+        <input
+          id="pair-code"
+          name="pair-code"
+          type="text"
+          inputmode="numeric"
+          autocomplete="one-time-code"
+          maxlength="9"
+          pattern="[0-9]{8}"
+          placeholder="12345678"
+          aria-describedby="pair-help"
+          required
+        />
+        <p id="pair-help" class="help">
+          Pairing öffnet ausschließlich eine lokale Verbindung zu deinem Rechner.
+        </p>
+        <button id="pair-button" class="button button--primary" type="submit">
+          Sicher verbinden
+        </button>
+      </form>
+
+      <details class="advanced">
+        <summary>Erweitert</summary>
+        <form id="port-form" class="form form--compact" novalidate>
+          <label for="bridge-port">Lokaler Bridge-Port</label>
+          <div class="inline-field">
+            <input
+              id="bridge-port"
+              name="bridge-port"
+              type="number"
+              min="1024"
+              max="65535"
+              required
+            />
+            <button class="button" type="submit">Speichern</button>
+          </div>
+        </form>
+        <button id="forget-button" class="button button--danger" type="button">
+          Pairing löschen
+        </button>
+      </details>
+
+      <p id="form-error" class="error" role="alert" hidden></p>
+      <footer>OSS von annonator · Nur localhost</footer>
+    </main>
+    <script src="popup.js"></script>
+  </body>
+</html>

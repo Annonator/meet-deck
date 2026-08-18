@@ -1,0 +1,86 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify-and-package:
+    name: Verify and package
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install exact dependencies
+        run: npm ci
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type-check
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Validate Stream Deck plugin
+        run: npm run validate
+
+      - name: Pack installable artifacts
+        run: npm run pack
+
+      - name: Verify packaged artifacts and checksums
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(node -p "JSON.parse(require('fs').readFileSync('package.json', 'utf8')).version")"
+          plugin="artifacts/dev.annonator.meet-deck.streamDeckPlugin"
+          extension="artifacts/meet-deck-chrome-v${version}.zip"
+
+          test -f "$plugin"
+          test -f "$extension"
+          test -f artifacts/SHA256SUMS.txt
+          (
+            cd artifacts
+            sha256sum -c SHA256SUMS.txt
+            entries="$(unzip -Z1 "meet-deck-chrome-v${version}.zip")"
+            grep -Fxq "manifest.json" <<< "$entries"
+            if grep -Eq '(^|/)(node_modules|\.DS_Store)(/|$)|\.map$|^\.\./|^/' <<< "$entries"; then
+              echo "Chrome artifact contains a forbidden entry" >&2
+              exit 1
+            fi
+            test "$(wc -l < SHA256SUMS.txt | tr -d ' ')" = "2"
+            test "$(find . -maxdepth 1 -type f | wc -l | tr -d ' ')" = "3"
+          )
+
+      - name: Upload installable artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: meet-deck-${{ github.sha }}
+          path: artifacts/
+          if-no-files-found: error
+          retention-days: 14

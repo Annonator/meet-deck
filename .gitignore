@@ -1,0 +1,14 @@
+.DS_Store
+.env
+.env.*
+!.env.example
+node_modules/
+coverage/
+dist/
+artifacts/
+*.log
+*.streamDeckPlugin
+*.zip
+apps/streamdeck-plugin/dev.annonator.meet-deck.sdPlugin/bin/
+apps/streamdeck-plugin/dev.annonator.meet-deck.sdPlugin/logs/
+apps/chrome-extension/dist/

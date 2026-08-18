@@ -1,0 +1,126 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-release:
+    name: Build GitHub release
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+
+    steps:
+      - name: Check out tagged source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Verify tag and manifest versions
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF_NAME}"
+          version="${tag#v}"
+          test "$tag" = "v${version}"
+          test "$version" != "$tag"
+          node --input-type=module <<'NODE'
+          import { readFileSync } from "node:fs";
+
+          const tag = process.env.GITHUB_REF_NAME;
+          const version = tag.slice(1);
+          if (!/^\d+\.\d+\.\d+$/.test(version)) {
+            throw new Error(`Release tag is not SemVer: ${tag}`);
+          }
+
+          const readJson = (path) => JSON.parse(readFileSync(path, "utf8"));
+          const rootVersion = readJson("package.json").version;
+          const chromeManifest = readJson(
+            "apps/chrome-extension/public/manifest.json",
+          );
+          const chromeVersion = chromeManifest.version;
+          const pluginVersion = readJson(
+            "apps/streamdeck-plugin/dev.annonator.meet-deck.sdPlugin/manifest.json",
+          ).Version;
+
+          const expectedPluginVersion = `${version}.0`;
+          if (rootVersion !== version) {
+            throw new Error(`package.json is ${rootVersion}; tag is ${tag}`);
+          }
+          if (chromeVersion !== version) {
+            throw new Error(`Chrome manifest is ${chromeVersion}; tag is ${tag}`);
+          }
+          if (JSON.stringify(chromeManifest.permissions) !== '["storage","alarms"]') {
+            throw new Error(
+              `Unexpected Chrome permissions: ${JSON.stringify(chromeManifest.permissions)}`,
+            );
+          }
+          if (pluginVersion !== expectedPluginVersion) {
+            throw new Error(
+              `Stream Deck manifest is ${pluginVersion}; expected ${expectedPluginVersion}`,
+            );
+          }
+          NODE
+
+      - name: Install exact dependencies
+        run: npm ci
+
+      - name: Run release gates
+        run: npm run check
+
+      - name: Pack installable artifacts
+        run: npm run pack
+
+      - name: Verify release artifacts and checksums
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="${GITHUB_REF_NAME#v}"
+          plugin="artifacts/dev.annonator.meet-deck.streamDeckPlugin"
+          extension="artifacts/meet-deck-chrome-v${version}.zip"
+
+          test -f "$plugin"
+          test -f "$extension"
+          test -f artifacts/SHA256SUMS.txt
+          (
+            cd artifacts
+            sha256sum -c SHA256SUMS.txt
+            entries="$(unzip -Z1 "meet-deck-chrome-v${version}.zip")"
+            grep -Fxq "manifest.json" <<< "$entries"
+            if grep -Eq '(^|/)(node_modules|\.DS_Store)(/|$)|\.map$|^\.\./|^/' <<< "$entries"; then
+              echo "Chrome artifact contains a forbidden entry" >&2
+              exit 1
+            fi
+            test "$(wc -l < SHA256SUMS.txt | tr -d ' ')" = "2"
+            test "$(find . -maxdepth 1 -type f | wc -l | tr -d ' ')" = "3"
+          )
+
+      - name: Upload workflow evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: meet-deck-${{ github.ref_name }}
+          path: artifacts/
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          gh release create "${GITHUB_REF_NAME}" artifacts/dev.annonator.meet-deck.streamDeckPlugin
+          "artifacts/meet-deck-chrome-${GITHUB_REF_NAME}.zip" artifacts/SHA256SUMS.txt --verify-tag
+          --generate-notes --title "Meet Deck ${GITHUB_REF_NAME}"

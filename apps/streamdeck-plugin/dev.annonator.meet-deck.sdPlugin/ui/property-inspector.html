@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; style-src 'self'; script-src 'self'; connect-src ws://127.0.0.1:*"
+    />
+    <title>Meet Deck settings</title>
+    <link rel="stylesheet" href="property-inspector.css" />
+  </head>
+  <body>
+    <main>
+      <section class="status-card" aria-live="polite">
+        <span id="status-dot" class="status-dot offline" aria-hidden="true"></span>
+        <div>
+          <strong id="status-title">Loading Meet Deck…</strong>
+          <p id="status-detail">Waiting for the plugin.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2>Local bridge</h2>
+        <label for="port">Loopback port</label>
+        <div class="row">
+          <input id="port" type="number" inputmode="numeric" min="1024" max="65535" value="53421" />
+          <button id="save-port" type="button" class="secondary">Save</button>
+        </div>
+        <p class="hint">
+          Listens only on <code>127.0.0.1</code>. Changing the port restarts the local bridge.
+        </p>
+      </section>
+
+      <section>
+        <h2>Chrome extension</h2>
+        <div id="pairing-code-wrap" class="pairing-code-wrap" hidden>
+          <span>Enter this code in the Meet Deck extension:</span>
+          <output id="pairing-code" class="pairing-code">—</output>
+          <span id="pairing-expiry" class="hint"></span>
+        </div>
+        <div class="row">
+          <button id="pair" type="button">Start pairing</button>
+          <button id="cancel-pair" type="button" class="secondary" hidden>Cancel</button>
+          <button id="unpair" type="button" class="danger" hidden>Unpair</button>
+        </div>
+        <p class="hint">
+          The one-time code expires after two minutes. The long-lived token is never exposed to this
+          screen.
+        </p>
+      </section>
+
+      <p id="message" class="message" role="status"></p>
+    </main>
+    <script src="property-inspector.js"></script>
+  </body>
+</html>

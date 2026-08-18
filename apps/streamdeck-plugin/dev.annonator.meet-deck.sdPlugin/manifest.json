@@ -1,0 +1,128 @@
+{
+  "$schema": "https://schemas.elgato.com/streamdeck/plugins/manifest.json",
+  "Name": "Meet Deck",
+  "Version": "0.1.0.0",
+  "Author": "annonator",
+  "UUID": "dev.annonator.meet-deck",
+  "Description": "Privacy-first controls for Google Meet through a local, paired browser extension.",
+  "Category": "Meet Deck",
+  "CategoryIcon": "imgs/plugin/category-icon",
+  "Icon": "imgs/plugin/marketplace",
+  "CodePath": "bin/plugin.js",
+  "PropertyInspectorPath": "ui/property-inspector.html",
+  "SDKVersion": 3,
+  "Software": {
+    "MinimumVersion": "7.1"
+  },
+  "Nodejs": {
+    "Version": "24"
+  },
+  "OS": [
+    {
+      "Platform": "mac",
+      "MinimumVersion": "12"
+    }
+  ],
+  "Actions": [
+    {
+      "Name": "Microphone",
+      "UUID": "dev.annonator.meet-deck.microphone",
+      "Icon": "imgs/actions/microphone/icon",
+      "Tooltip": "Mute or unmute the active Google Meet microphone.",
+      "PropertyInspectorPath": "ui/property-inspector.html",
+      "Controllers": ["Keypad"],
+      "DisableAutomaticStates": true,
+      "SupportedInMultiActions": false,
+      "SupportedInKeyLogicActions": false,
+      "States": [
+        {
+          "Name": "Muted",
+          "Image": "imgs/actions/microphone/off",
+          "Title": "Muted",
+          "TitleAlignment": "bottom"
+        },
+        {
+          "Name": "Microphone on",
+          "Image": "imgs/actions/microphone/on",
+          "Title": "Mic on",
+          "TitleAlignment": "bottom"
+        }
+      ]
+    },
+    {
+      "Name": "Camera",
+      "UUID": "dev.annonator.meet-deck.camera",
+      "Icon": "imgs/actions/camera/icon",
+      "Tooltip": "Turn the active Google Meet camera on or off.",
+      "PropertyInspectorPath": "ui/property-inspector.html",
+      "Controllers": ["Keypad"],
+      "DisableAutomaticStates": true,
+      "SupportedInMultiActions": false,
+      "SupportedInKeyLogicActions": false,
+      "States": [
+        {
+          "Name": "Camera off",
+          "Image": "imgs/actions/camera/off",
+          "Title": "Cam off",
+          "TitleAlignment": "bottom"
+        },
+        {
+          "Name": "Camera on",
+          "Image": "imgs/actions/camera/on",
+          "Title": "Cam on",
+          "TitleAlignment": "bottom"
+        }
+      ]
+    },
+    {
+      "Name": "Hand",
+      "UUID": "dev.annonator.meet-deck.hand",
+      "Icon": "imgs/actions/hand/icon",
+      "Tooltip": "Raise or lower your hand in the active Google Meet.",
+      "PropertyInspectorPath": "ui/property-inspector.html",
+      "Controllers": ["Keypad"],
+      "DisableAutomaticStates": true,
+      "SupportedInMultiActions": false,
+      "SupportedInKeyLogicActions": false,
+      "States": [
+        {
+          "Name": "Hand lowered",
+          "Image": "imgs/actions/hand/off",
+          "Title": "Hand down",
+          "TitleAlignment": "bottom"
+        },
+        {
+          "Name": "Hand raised",
+          "Image": "imgs/actions/hand/on",
+          "Title": "Hand up",
+          "TitleAlignment": "bottom"
+        }
+      ]
+    },
+    {
+      "Name": "Presentation",
+      "UUID": "dev.annonator.meet-deck.presentation",
+      "Icon": "imgs/actions/presentation/icon",
+      "Tooltip": "Start or stop presenting in the active Google Meet.",
+      "PropertyInspectorPath": "ui/property-inspector.html",
+      "Controllers": ["Keypad"],
+      "DisableAutomaticStates": true,
+      "SupportedInMultiActions": false,
+      "SupportedInKeyLogicActions": false,
+      "States": [
+        {
+          "Name": "Not presenting",
+          "Image": "imgs/actions/presentation/off",
+          "Title": "Share",
+          "TitleAlignment": "bottom"
+        },
+        {
+          "Name": "Presenting",
+          "Image": "imgs/actions/presentation/on",
+          "Title": "Sharing",
+          "TitleAlignment": "bottom"
+        }
+      ]
+    }
+  ]
+}
