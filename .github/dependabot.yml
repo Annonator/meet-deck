@@ -1,0 +1,52 @@
+version: 2
+
+updates:
+  # All npm workspaces share the root lockfile, so Dependabot updates them here.
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Berlin"
+    groups:
+      stream-deck-plugin:
+        patterns:
+          - "@elgato/*"
+          - "@types/ws"
+          - "ws"
+      chrome-extension:
+        patterns:
+          - "@types/chrome"
+      typescript:
+        patterns:
+          - "@types/node"
+          - "tslib"
+          - "typescript"
+      lint-and-format:
+        patterns:
+          - "@eslint/*"
+          - "@typescript-eslint/*"
+          - "eslint"
+          - "prettier"
+          - "typescript-eslint"
+      testing:
+        patterns:
+          - "@vitest/*"
+          - "jsdom"
+          - "vitest"
+      bundling:
+        patterns:
+          - "@rollup/*"
+          - "rollup"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Berlin"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
