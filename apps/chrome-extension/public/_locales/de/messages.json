@@ -12,7 +12,7 @@
     "message": "Meet Deck"
   },
   "popup_tagline": {
-    "message": "Lokal. Open Source. Keine Meeting-Medien oder -Texte."
+    "message": "Lokal. Open Source. Keine Meeting-Medien oder -Kommunikation."
   },
   "popup_connection_heading": {
     "message": "Verbindung"
@@ -141,7 +141,7 @@
     "message": "Meet Deck · annonator"
   },
   "onboarding_heading": {
-    "message": "Deine Meeting-Medien bleiben in deinem Browser."
+    "message": "Meet Deck greift nicht auf Meeting-Medien zu."
   },
   "onboarding_lead": {
     "message": "Meet Deck verbindet Google Meet und Stream Deck ausschließlich über IPv4-Loopback. Keine Cloud, keine Telemetrie und keine Meeting-Medien oder -Kommunikation."

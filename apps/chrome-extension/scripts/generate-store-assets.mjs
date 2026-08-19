@@ -312,7 +312,7 @@ function privacyMarkup(privacyImage) {
   return `<main class="screenshot privacy-shot">
   <section class="copy">
     <div class="eyebrow">Private by design</div>
-    <h1>No meeting media leaves your browser.</h1>
+    <h1>Meet Deck does not access meeting media.</h1>
     <p>Meet Deck connects Google Meet and Stream Deck only over IPv4 loopback. No cloud, no telemetry, and no meeting media or communications.</p>
   </section>
   <div class="privacy-frame"><img src="${privacyImage}" alt="Meet Deck privacy summary"></div>
