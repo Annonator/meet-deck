@@ -54,6 +54,9 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Validate Chrome Web Store listing assets
+        run: npm run store:validate
+
       - name: Validate Stream Deck plugin
         run: npm run validate
 

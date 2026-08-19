@@ -24,8 +24,8 @@ Meet behavior.
    the matching companion extension in **Google Chrome**, not Microsoft Edge.
 2. Use Stream Deck 7.1 or newer and a physical Stream Deck with LCD keys. Stream Deck + footage must
    show keys only; Meet Deck v0.1.0 does not support its dials or touch strip.
-3. Pair before recording. Keep the pairing code and the German companion popup/onboarding out of
-   frame. The Stream Deck property inspector and key labels are English.
+3. Pair before recording. Keep the pairing code and companion popup/onboarding out of frame. The
+   Stream Deck property inspector and key labels are English.
 4. Use an English-language Chrome profile and a dedicated Google Meet with synthetic identities and
    content. Use a neutral camera backdrop and a synthetic presentation window.
 5. Hide the Meet URL/code, participant names and avatars, account identity, calendar titles,

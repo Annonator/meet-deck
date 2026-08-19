@@ -12,6 +12,15 @@ const manifest = JSON.parse(
 const englishMessages = JSON.parse(
   await readFile(new URL("../public/_locales/en/messages.json", import.meta.url), "utf8")
 );
+const streamDeckManifest = JSON.parse(
+  await readFile(
+    new URL(
+      "../../streamdeck-plugin/dev.annonator.meet-deck.sdPlugin/manifest.json",
+      import.meta.url
+    ),
+    "utf8"
+  )
+);
 
 const expectedAssets = new Map([
   ["01-pair-locally.png", [1280, 800]],
@@ -53,6 +62,7 @@ console.log(
 
 function validateListing() {
   const details = listing.listing;
+  const macRequirement = streamDeckManifest.OS?.find((entry) => entry.Platform === "mac");
   assertString(details.name, 1, 75, "listing name");
   assertString(details.summary, 1, 132, "listing summary");
   assertString(details.detailedDescription, 2, 16_000, "detailed description");
@@ -74,6 +84,15 @@ function validateListing() {
   assert(
     manifest.default_locale === details.defaultLocale,
     "manifest and listing locales must match"
+  );
+  assert(
+    typeof macRequirement?.MinimumVersion === "string" &&
+      details.detailedDescription.includes(`macOS ${macRequirement.MinimumVersion} or newer`),
+    "detailed description must match the Stream Deck manifest macOS minimum"
+  );
+  assert(
+    !/macOS 12(?:\+| or newer)/u.test(JSON.stringify(listing)),
+    "store metadata must not advertise the superseded macOS 12 minimum"
   );
 
   assertString(listing.privacy.singlePurpose, 20, 1_000, "single-purpose statement");
@@ -136,6 +155,12 @@ function validateListing() {
   assert(
     listing.reviewer.additionalInstructionsTemplate.includes("{COMPANION_PLUGIN_URL}"),
     "reviewer instructions must retain the plugin URL placeholder"
+  );
+  assert(
+    listing.reviewer.additionalInstructionsTemplate.includes(
+      `macOS ${macRequirement?.MinimumVersion}+`
+    ),
+    "reviewer instructions must match the Stream Deck manifest macOS minimum"
   );
   assert(listing.reviewer.fullProcedure.length >= 6, "reviewer procedure must cover the full flow");
   assert(listing.reviewer.testAccount === "None required", "reviewer test-account answer");

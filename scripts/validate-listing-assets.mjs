@@ -22,8 +22,21 @@ const [listing, rootPackage, chromePackage, chromeManifest, streamDeckManifest] 
     )
   ]
 );
+const chromeDefaultMessages = await readJson(
+  path.join(
+    repositoryRoot,
+    `apps/chrome-extension/public/_locales/${chromeManifest.default_locale}/messages.json`
+  )
+);
 
-validateListingCopy(listing, rootPackage, chromePackage, chromeManifest, streamDeckManifest);
+validateListingCopy(
+  listing,
+  rootPackage,
+  chromePackage,
+  chromeManifest,
+  chromeDefaultMessages,
+  streamDeckManifest
+);
 const mediaFiles = await validateMedia(listing?.media);
 await validateExportDirectory(listing?.media, mediaFiles);
 
@@ -45,6 +58,7 @@ function validateListingCopy(
   rootPackage,
   chromePackage,
   chromeManifest,
+  chromeDefaultMessages,
   streamDeckManifest
 ) {
   if (listing?.listingState !== "draft-not-submitted") {
@@ -72,7 +86,11 @@ function validateListingCopy(
   if (nameLength > 30) {
     addError(`product.name is ${nameLength} characters; repository policy caps it at 30.`);
   }
-  if (product.name !== streamDeckManifest.Name || product.name !== chromeManifest.name) {
+  const chromeManifestName = resolveChromeManifestMessage(
+    chromeManifest.name,
+    chromeDefaultMessages
+  );
+  if (product.name !== streamDeckManifest.Name || product.name !== chromeManifestName) {
     addError("product.name must match the Stream Deck and Chrome manifest names.");
   }
 
@@ -113,7 +131,7 @@ function validateListingCopy(
   }
   if (
     product.interfaceLanguages?.streamDeckPropertyInspector !== "en" ||
-    product.interfaceLanguages?.chromeCompanion !== "de" ||
+    JSON.stringify(product.interfaceLanguages?.chromeCompanion) !== '["en","de"]' ||
     JSON.stringify(product.interfaceLanguages?.supportedMeetControls) !== '["en","de"]'
   ) {
     addError("product.interfaceLanguages must disclose the current English and German surfaces.");
@@ -191,10 +209,47 @@ function validateListingCopy(
   if (/\bencrypt(?:ed|ion)?\b/iu.test(allCopy)) {
     addError("Listing copy must describe the bridge as authenticated, not encrypted.");
   }
+  if (/macOS 12(?:\+| or newer)/u.test(allCopy)) {
+    addError("Listing copy must not advertise the superseded macOS 12 minimum.");
+  }
+  if (/Chrome Local Network Access|Sicher verbinden/u.test(allCopy)) {
+    addError("Listing copy must use the current exact-host permission and pairing terminology.");
+  }
+  if (
+    /companion (?:setup (?:screen|interface)|popup|screen) is (?:currently )?German/iu.test(allCopy)
+  ) {
+    addError("Listing copy must disclose that the Chrome companion supports English and German.");
+  }
+  if (
+    typeof macRequirement?.MinimumVersion === "string" &&
+    !product.description.includes(`macOS ${macRequirement.MinimumVersion} or newer`)
+  ) {
+    addError("product.description must state the manifest macOS minimum.");
+  }
+  if (
+    typeof macRequirement?.MinimumVersion === "string" &&
+    !product.reviewerInstructions?.[0]?.includes(`macOS ${macRequirement.MinimumVersion} or newer`)
+  ) {
+    addError("product.reviewerInstructions must state the manifest macOS minimum.");
+  }
+  if (
+    typeof macRequirement?.MinimumVersion === "string" &&
+    !product.releaseNotes?.text?.includes(`macOS ${macRequirement.MinimumVersion}+`)
+  ) {
+    addError("product.releaseNotes must state the manifest macOS minimum.");
+  }
 
   results.push(
     `copy: name ${nameLength}/30, tagline ${taglineLength}/60 internal cap, description ${descriptionLength}/1500, release notes ${releaseNotesLength}/1500 characters`
   );
+}
+
+function resolveChromeManifestMessage(value, messages) {
+  if (typeof value !== "string") {
+    return value;
+  }
+  const match = /^__MSG_([A-Za-z0-9_]+)__$/.exec(value);
+  return match === null ? value : messages?.[match[1]]?.message;
 }
 
 async function validateMedia(media) {
@@ -209,11 +264,11 @@ async function validateMedia(media) {
 
   const entries = [media.appIcon, media.thumbnail, ...(media.gallery ?? [])];
   const expected = [
-    ["meet-deck-app-icon.png", 288, 288, 2000000],
-    ["meet-deck-thumbnail.png", 1920, 960, 5000000],
-    ["meet-deck-gallery-01-controls.png", 1920, 960, 10000000],
-    ["meet-deck-gallery-02-pairing.png", 1920, 960, 10000000],
-    ["meet-deck-gallery-03-privacy.png", 1920, 960, 10000000]
+    ["meet-deck-app-icon.png", 288, 288, 2000000, 20000],
+    ["meet-deck-thumbnail.png", 1920, 960, 5000000, 100000],
+    ["meet-deck-gallery-01-controls.png", 1920, 960, 10000000, 100000],
+    ["meet-deck-gallery-02-pairing.png", 1920, 960, 10000000, 100000],
+    ["meet-deck-gallery-03-privacy.png", 1920, 960, 10000000, 100000]
   ];
 
   if (entries.length !== expected.length) {
@@ -223,7 +278,7 @@ async function validateMedia(media) {
   const validated = [];
   const hashes = new Set();
   for (const [index, entry] of entries.entries()) {
-    const [fileName, width, height, maxBytes] = expected[index] ?? [];
+    const [fileName, width, height, maxBytes, minimumBytes] = expected[index] ?? [];
     if (typeof entry !== "object" || entry === null) {
       addError(`Static media entry ${index + 1} must be an object.`);
       continue;
@@ -255,6 +310,11 @@ async function validateMedia(media) {
       const fileStats = await stat(absolutePath);
       if (fileStats.size > maxBytes) {
         addError(`${fileName} is ${fileStats.size} bytes; maximum is ${maxBytes}.`);
+      }
+      if (fileStats.size < minimumBytes) {
+        addError(
+          `${fileName} is only ${fileStats.size} bytes; expected at least ${minimumBytes} bytes for the reviewed non-blank artboard.`
+        );
       }
       const png = inspectPng(buffer, fileName);
       if (png.width !== width || png.height !== height) {

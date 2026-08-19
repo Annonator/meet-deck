@@ -91,6 +91,12 @@ try {
       "run-code",
       "await Promise.all([...document.images].map((image) => image.decode()))"
     ]);
+    await runPlaywright([
+      "--session",
+      sessionName,
+      "run-code",
+      `await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))); const artboard = document.querySelector(".asset-${asset.name}"); if (document.body.dataset.asset !== "${asset.name}" || artboard === null || getComputedStyle(artboard).display === "none") throw new Error("Marketplace artboard did not finish rendering: ${asset.name}")`
+    ]);
     await runPlaywright(["--session", sessionName, "screenshot", "--filename", asset.file]);
     await copyFile(path.join(renderScratch, ".playwright-cli", asset.file), outputPath);
     console.log(
