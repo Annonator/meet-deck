@@ -50,7 +50,7 @@ and [architecture](docs/en/architecture.md).
 ## Build from source
 
 Building requires Node.js 24.13.1 and npm and is tested in CI on Ubuntu 24.04. Running and manually
-testing version 1 requires macOS 12+, Chrome 147+, and Stream Deck 7.1+.
+testing version 1 requires macOS 13+, Chrome 147+, and Stream Deck 7.1+.
 
 ```sh
 npm ci

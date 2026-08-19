@@ -2,7 +2,7 @@
 
 ## Voraussetzungen
 
-- macOS 12 oder neuer
+- macOS 13 oder neuer
 - Elgato Stream Deck Desktop-App 7.1 oder neuer
 - Google Chrome 147 oder neuer
 - ein Stream Deck mit LCD-Tasten (die Tasten des Stream Deck + werden unterstützt)
