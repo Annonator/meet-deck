@@ -19,26 +19,30 @@ export async function generateIcons(outputRoot) {
 
 function renderIcon(size) {
   const rows = Buffer.alloc((size * 4 + 1) * size);
-  const radius = size * 0.22;
-  const glyphScale = Math.max(1, Math.floor(size / 16));
+  const artworkInset = size === 128 ? 16 : 0;
+  const artworkSize = size - artworkInset * 2;
+  const radius = artworkSize * 0.22;
+  const glyphScale = Math.max(1, Math.floor(artworkSize / 16));
   const glyphWidth = 5 * glyphScale;
   const gap = glyphScale;
   const textWidth = glyphWidth * 2 + gap;
   const textHeight = 7 * glyphScale;
-  const textX = Math.floor((size - textWidth) / 2);
-  const textY = Math.floor((size - textHeight) / 2);
+  const textX = artworkInset + Math.floor((artworkSize - textWidth) / 2);
+  const textY = artworkInset + Math.floor((artworkSize - textHeight) / 2);
 
   for (let y = 0; y < size; y += 1) {
     const rowOffset = y * (size * 4 + 1);
     rows[rowOffset] = 0;
     for (let x = 0; x < size; x += 1) {
       const pixelOffset = rowOffset + 1 + x * 4;
-      if (!insideRoundedSquare(x + 0.5, y + 0.5, size, radius)) {
+      const artworkX = x - artworkInset;
+      const artworkY = y - artworkInset;
+      if (!insideRoundedSquare(artworkX + 0.5, artworkY + 0.5, artworkSize, radius)) {
         rows[pixelOffset + 3] = 0;
         continue;
       }
 
-      const blend = (x + y) / Math.max(1, 2 * size - 2);
+      const blend = (artworkX + artworkY) / Math.max(1, 2 * artworkSize - 2);
       rows[pixelOffset] = Math.round(47 + 84 * blend);
       rows[pixelOffset + 1] = Math.round(119 - 45 * blend);
       rows[pixelOffset + 2] = Math.round(233 + 4 * blend);
