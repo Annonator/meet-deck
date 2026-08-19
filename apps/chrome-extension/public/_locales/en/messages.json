@@ -16,7 +16,7 @@
     "description": "Toolbar action title."
   },
   "popup_tagline": {
-    "message": "Local. Open source. No meeting media or text.",
+    "message": "Local. Open source. No meeting media or communications.",
     "description": "Short privacy tagline in the popup."
   },
   "popup_connection_heading": {
@@ -188,7 +188,7 @@
     "description": "Product and publisher label above the onboarding heading."
   },
   "onboarding_heading": {
-    "message": "Your meeting media stays in your browser.",
+    "message": "Meet Deck does not access meeting media.",
     "description": "Main onboarding heading."
   },
   "onboarding_lead": {
