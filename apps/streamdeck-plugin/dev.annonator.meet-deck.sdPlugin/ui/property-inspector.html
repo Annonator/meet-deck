@@ -23,11 +23,16 @@
       <section>
         <h2>Local bridge</h2>
         <label for="port">Loopback port</label>
-        <div class="row">
-          <input id="port" type="number" inputmode="numeric" min="1024" max="65535" value="53421" />
-          <button id="save-port" type="button" class="secondary">Save</button>
-        </div>
-        <p class="hint">
+        <input
+          id="port"
+          type="number"
+          inputmode="numeric"
+          min="1024"
+          max="65535"
+          value="53421"
+          aria-describedby="port-hint"
+        />
+        <p id="port-hint" class="hint">
           Listens only on <code>127.0.0.1</code>. Changing the port restarts the local bridge.
         </p>
       </section>
@@ -47,6 +52,18 @@
         <p class="hint">
           The one-time code expires after two minutes. The long-lived token is never exposed to this
           screen.
+        </p>
+        <p class="hint">
+          <a
+            href="https://github.com/Annonator/meet-deck/blob/main/docs/en/setup.md"
+            target="_blank"
+            rel="noreferrer"
+            >Setup and troubleshooting</a
+          >
+          ·
+          <a href="https://github.com/Annonator/meet-deck/issues" target="_blank" rel="noreferrer"
+            >Get support</a
+          >
         </p>
       </section>
 

@@ -7,7 +7,6 @@
     statusTitle: document.querySelector("#status-title"),
     statusDetail: document.querySelector("#status-detail"),
     port: document.querySelector("#port"),
-    savePort: document.querySelector("#save-port"),
     pair: document.querySelector("#pair"),
     cancelPair: document.querySelector("#cancel-pair"),
     unpair: document.querySelector("#unpair"),
@@ -96,7 +95,7 @@
     elements.message.textContent = status.error || "";
   }
 
-  elements.savePort.addEventListener("click", () => {
+  elements.port.addEventListener("change", () => {
     const port = Number(elements.port.value);
     if (!Number.isInteger(port) || port < 1024 || port > 65535) {
       elements.message.textContent = "Choose a port between 1024 and 65535.";
@@ -119,6 +118,21 @@
   elements.unpair.addEventListener("click", () => {
     elements.message.textContent = "";
     send({ type: "pairing.unpair" });
+  });
+
+  document.querySelectorAll("a[href]").forEach((link) => {
+    link.addEventListener("click", (event) => {
+      if (!socket || socket.readyState !== WebSocket.OPEN || !registration) {
+        return;
+      }
+      event.preventDefault();
+      socket.send(
+        JSON.stringify({
+          event: "openUrl",
+          payload: { url: link.href }
+        })
+      );
+    });
   });
 
   window.connectElgatoStreamDeckSocket = (port, context, event, info, actionInfo) => {
