@@ -78,9 +78,7 @@ assertVersion("Chrome manifest version", chromeManifest.version, version);
 if (JSON.stringify(chromeManifest.permissions) !== '["storage","alarms"]') {
   throw new Error(`Unexpected Chrome permissions: ${JSON.stringify(chromeManifest.permissions)}`);
 }
-if (
-  JSON.stringify(chromeManifest.optional_host_permissions) !== '["ws://127.0.0.1/*"]'
-) {
+if (JSON.stringify(chromeManifest.optional_host_permissions) !== '["ws://127.0.0.1/*"]') {
   throw new Error(
     `Unexpected Chrome optional host permissions: ${JSON.stringify(chromeManifest.optional_host_permissions)}`
   );

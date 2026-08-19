@@ -13,8 +13,8 @@ Deck runtime, category, or action icon.
 - **Product name:** Meet Deck
 - **Tagline for media/optional marketing:** Google Meet controls on your Stream Deck.
 - **Listing language:** English
-- **Runtime UI:** Stream Deck property inspector in English; Chrome companion setup in German;
-  supported Google Meet controls in English or German
+- **Runtime UI:** Stream Deck property inspector in English; Chrome companion popup and onboarding
+  in English or German; supported Google Meet controls in English or German
 - **Recommended price:** Free; the Maker must confirm this before creating the product because the
   monetization choice cannot be changed in Maker Console without contacting Elgato.
 
@@ -29,12 +29,12 @@ presentation while each key follows the confirmed meeting state. A required Chro
 with the plugin over an authenticated local connection on 127.0.0.1; Meet Deck has no backend,
 analytics, or cloud relay.
 
-Use it with macOS 12 or newer, Stream Deck 7.1 or newer, Chrome 147 or newer, a Stream Deck with LCD
+Use it with macOS 13 or newer, Stream Deck 7.1 or newer, Chrome 147 or newer, a Stream Deck with LCD
 keys, and Google Meet controls in English or German. Install the matching companion extension, add
 the actions, then pair once with a short-lived code. Stream Deck settings are English; the companion
-setup screen is currently German. Chrome still requires you to choose and confirm every screen-share
-source. If browser user action is needed, the Presentation key briefly shows `⌃⌘T`; press
-`Control+Command+T` in Meet to continue.
+popup and onboarding follow Chrome's UI language in English or German. Chrome still requires you to
+choose and confirm every screen-share source. If browser user action is needed, the Presentation key
+briefly shows `⌃⌘T`; press `Control+Command+T` in Meet to continue.
 
 - Microphone and camera toggles with live state
 - Raise and lower hand
@@ -61,9 +61,11 @@ source. If browser user action is needed, the Presentation key briefly shows `�
 2. Follow the Setup link to install the matching Meet Deck companion extension in Google Chrome.
 3. Add the Microphone, Camera, Hand, and Presentation actions to Stream Deck LCD keys.
 4. Select any Meet Deck action, choose **Start pairing**, and enter the displayed eight-digit code
-   in the German companion screen within two minutes. Choose **Sicher verbinden**.
-5. Approve Chrome Local Network Access if prompted, then confirm the extension shows **Sicher mit
-   Stream Deck verbunden** and the property inspector shows **Extension connected**.
+   in the companion popup within two minutes. Choose **Pair and connect** (**Koppeln und verbinden**
+   in German).
+5. Approve only the exact optional Chrome host grant for `ws://127.0.0.1:<configured port>/*` if
+   prompted. Confirm the extension shows **Securely connected to Stream Deck** (**Sicher mit Stream
+   Deck verbunden** in German) and the property inspector shows **Extension connected**.
 6. Join exactly one supported Google Meet and use the keys. For presentation, if the key briefly
    shows `⌃⌘T`, press `Control+Command+T` in Meet, then choose and confirm the source in Chrome or
    macOS.
@@ -77,15 +79,17 @@ source. If browser user action is needed, the Presentation key briefly shows `�
 
 ### Reviewer instructions
 
-1. Use a Mac running macOS 12 or newer, Stream Deck 7.1 or newer, Google Chrome 147 or newer, and a
+1. Use a Mac running macOS 13 or newer, Stream Deck 7.1 or newer, Google Chrome 147 or newer, and a
    physical Stream Deck with LCD keys.
 2. Install the submitted `.streamDeckPlugin` artifact. Extract the matching v0.1.0 companion from
    the Maker-provided review ZIP, then load the extracted directory containing `manifest.json` as an
    unpacked Chrome extension. This draft does not claim Chrome Web Store availability.
 3. Add all four actions to LCD keys. Select one, open its property inspector, start pairing, and
-   enter the eight-digit code in the German companion screen before its two-minute expiry. Choose
-   **Sicher verbinden** and approve Chrome Local Network Access if prompted. Confirm **Sicher mit
-   Stream Deck verbunden** in the extension and **Extension connected** in the property inspector.
+   enter the eight-digit code in the companion popup before its two-minute expiry. Choose **Pair and
+   connect** (**Koppeln und verbinden** in German) and approve only the exact optional Chrome host
+   grant for `ws://127.0.0.1:<configured port>/*` if prompted. Confirm **Securely connected to
+   Stream Deck** (**Sicher mit Stream Deck verbunden** in German) in the extension and **Extension
+   connected** in the property inspector.
 4. Join a dedicated Google Meet containing only synthetic identities and content. Test microphone,
    camera, and hand in both directions: press the physical key, then change the visible Meet control
    and confirm the key follows the final state.
@@ -106,9 +110,9 @@ and the local user's presentation, with confirmed Google Meet state feedback. If
 is needed, the Presentation key briefly shows `⌃⌘T`; press `Control+Command+T` in Meet to continue.
 Source selection remains in Chrome and macOS. Includes short-lived local pairing with the required
 Chrome companion, authenticated commands on `127.0.0.1`, and safe no-click behavior when no single
-supported meeting is available. Supports macOS 12+, Stream Deck 7.1+, Chrome 147+, and English or
-German Google Meet controls. The Stream Deck settings are English and the companion setup screen is
-German.
+supported meeting is available. Supports macOS 13+, Stream Deck 7.1+, Chrome 147+, and English or
+German Google Meet controls. The Stream Deck settings are English; the companion popup and
+onboarding follow Chrome's UI language in English or German.
 
 ## Media inventory
 
@@ -124,9 +128,9 @@ and re-adding items is required to change the order.
 | 3         | `assets/export/meet-deck-gallery-03-privacy.png`  | Authenticated loopback and data boundary                 |
 | 4         | `assets/export/meet-deck-demo.mp4`                | Required honest hardware demonstration; still to capture |
 
-The pairing graphic deliberately labels its eight-digit code as illustrative. It does not depict a
-translated extension screenshot: the current Chrome companion popup is German, and Elgato requires
-English submission media.
+The pairing graphic deliberately labels its eight-digit code as illustrative. It is an English
+diagram rather than an extension screenshot; the actual companion popup and onboarding follow
+Chrome's UI language in English or German.
 
 The editable source for all PNGs is [`assets/source/artboards.html`](assets/source/artboards.html).
 To regenerate and verify the exports, install `playwright-cli`, then run:
@@ -180,12 +184,14 @@ Official references:
    that **Meet Deck** is still unique. Then confirm the `annonator` Maker organization, support
    method, Maker Agreement, and Free monetization choice; the name and monetization choice are not
    self-service editable after creation.
-3. Build the exact candidate artifacts with `npm run pack`. Before submission, confirm with
+3. Merge the exact candidate documentation to the public `main` branch, then verify the setup,
+   privacy, repository, and support links while signed out.
+4. Build the exact candidate artifacts with `npm run pack`. Before submission, confirm with
    `maker@elgato.com` how to deliver the matching companion ZIP to reviewers, then record the agreed
    channel and ZIP SHA-256 without claiming Chrome Web Store availability.
-4. Create the Stream Deck plugin product and upload the `.streamDeckPlugin`, icon, thumbnail, three
+5. Create the Stream Deck plugin product and upload the `.streamDeckPlugin`, icon, thumbnail, three
    PNG gallery images, and functional MP4. Add the links and final copy above.
-5. Turn off **Automatically publish after being approved**, submit for review, and allow Elgato's
+6. Turn off **Automatically publish after being approved**, submit for review, and allow Elgato's
    stated 4–10 business-day review window.
-6. After approval, verify that the companion-extension distribution path is ready, perform a clean
+7. After approval, verify that the companion-extension distribution path is ready, perform a clean
    install test, and only then release the approved listing manually.

@@ -19,14 +19,14 @@
     "listingLanguage": "en",
     "interfaceLanguages": {
       "streamDeckPropertyInspector": "en",
-      "chromeCompanion": "de",
+      "chromeCompanion": ["en", "de"],
       "supportedMeetControls": ["en", "de"]
     },
     "pricing": {
       "recommendation": "free",
       "makerConsoleConfirmationRequired": true
     },
-    "description": "Meet Deck adds focused Google Meet controls to Stream Deck on macOS. Toggle your microphone or camera, raise or lower your hand, and request Meet's presentation flow or stop your own active presentation while each key follows the confirmed meeting state. A required Chrome extension pairs with the plugin over an authenticated local connection on 127.0.0.1; Meet Deck has no backend, analytics, or cloud relay.\n\nUse it with macOS 12 or newer, Stream Deck 7.1 or newer, Chrome 147 or newer, a Stream Deck with LCD keys, and Google Meet controls in English or German. Install the matching companion extension, add the actions, then pair once with a short-lived code. Stream Deck settings are English; the companion setup screen is currently German. Chrome still requires you to choose and confirm every screen-share source. If browser user action is needed, the Presentation key briefly shows ⌃⌘T; press Control+Command+T in Meet to continue.\n\n• Microphone and camera toggles with live state\n• Raise and lower hand\n• Presentation requests and stop control\n• Safe no-click behavior when no single supported meeting is available\n• Open source under the MIT License",
+    "description": "Meet Deck adds focused Google Meet controls to Stream Deck on macOS. Toggle your microphone or camera, raise or lower your hand, and request Meet's presentation flow or stop your own active presentation while each key follows the confirmed meeting state. A required Chrome extension pairs with the plugin over an authenticated local connection on 127.0.0.1; Meet Deck has no backend, analytics, or cloud relay.\n\nUse it with macOS 13 or newer, Stream Deck 7.1 or newer, Chrome 147 or newer, a Stream Deck with LCD keys, and Google Meet controls in English or German. Install the matching companion extension, add the actions, then pair once with a short-lived code. Stream Deck settings are English; the companion popup and onboarding follow Chrome's UI language in English or German. Chrome still requires you to choose and confirm every screen-share source. If browser user action is needed, the Presentation key briefly shows ⌃⌘T; press Control+Command+T in Meet to continue.\n\n• Microphone and camera toggles with live state\n• Raise and lower hand\n• Presentation requests and stop control\n• Safe no-click behavior when no single supported meeting is available\n• Open source under the MIT License",
     "features": [
       "Toggle the microphone or camera with confirmed live state on each key.",
       "Raise or lower your hand from a Stream Deck key.",
@@ -36,7 +36,7 @@
       "Use open-source software with no Meet Deck backend, analytics, advertising, or cloud relay."
     ],
     "requirements": {
-      "macOSMinimum": "12",
+      "macOSMinimum": "13",
       "streamDeckMinimum": "7.1",
       "chromeMinimum": "147",
       "controller": "Stream Deck with LCD keys",
@@ -47,13 +47,13 @@
       "Install the Meet Deck plugin from its product page once manually published, or use the submitted plugin artifact during review.",
       "Follow the Setup link to install the matching Meet Deck companion extension in Google Chrome.",
       "Add the Microphone, Camera, Hand, and Presentation actions to Stream Deck LCD keys.",
-      "Select any Meet Deck action, choose Start pairing, and enter the displayed eight-digit code in the German companion screen within two minutes. Choose Sicher verbinden.",
-      "Approve Chrome Local Network Access if prompted, then confirm the extension shows Sicher mit Stream Deck verbunden and the property inspector shows Extension connected.",
+      "Select any Meet Deck action, choose Start pairing, and enter the displayed eight-digit code in the companion popup within two minutes. Choose Pair and connect (Koppeln und verbinden in German).",
+      "Approve the exact optional Chrome host grant for ws://127.0.0.1:<configured port>/* if prompted, then confirm the extension shows Securely connected to Stream Deck (Sicher mit Stream Deck verbunden in German) and the property inspector shows Extension connected.",
       "Join exactly one supported Google Meet and use the keys. For presentation, if the key briefly shows ⌃⌘T, press Control+Command+T in Meet, then choose and confirm the source in Chrome or macOS."
     ],
     "limitations": [
       "Version 0.1.0 supports macOS and Google Chrome only.",
-      "The Stream Deck property inspector is English; the Chrome companion setup interface is currently German.",
+      "The Stream Deck property inspector is English; the Chrome companion popup and onboarding follow Chrome's UI language in English or German.",
       "Stream Deck + is supported through its LCD keys, not its dials or touch strip.",
       "A presentation request may briefly show ⌃⌘T on the key and require Control+Command+T in Meet; source selection cannot be automated and remains subject to Chrome and macOS confirmation.",
       "Meet Deck intentionally performs no click when meeting targeting or the supported control layout is ambiguous."
@@ -65,9 +65,9 @@
       "privacy": "https://github.com/Annonator/meet-deck/blob/main/docs/en/privacy.md"
     },
     "reviewerInstructions": [
-      "Use a Mac running macOS 12 or newer, Stream Deck 7.1 or newer, Google Chrome 147 or newer, and a physical Stream Deck with LCD keys.",
+      "Use a Mac running macOS 13 or newer, Stream Deck 7.1 or newer, Google Chrome 147 or newer, and a physical Stream Deck with LCD keys.",
       "Install the submitted .streamDeckPlugin artifact. Extract the matching v0.1.0 companion from the Maker-provided review ZIP, then load the extracted directory containing manifest.json as an unpacked Chrome extension. This draft does not claim Chrome Web Store availability.",
-      "Add all four Meet Deck actions to LCD keys. Select one action, open its property inspector, start pairing, and enter the eight-digit code in the German companion screen before the two-minute expiry. Choose Sicher verbinden and approve Chrome Local Network Access if prompted. Confirm Sicher mit Stream Deck verbunden in the extension and Extension connected in the property inspector.",
+      "Add all four Meet Deck actions to LCD keys. Select one action, open its property inspector, start pairing, and enter the eight-digit code in the companion popup before the two-minute expiry. Choose Pair and connect (Koppeln und verbinden in German) and approve only the exact optional Chrome host grant for ws://127.0.0.1:<configured port>/* if prompted. Confirm Securely connected to Stream Deck (Sicher mit Stream Deck verbunden in German) in the extension and Extension connected in the property inspector.",
       "Join a dedicated Google Meet containing only synthetic identities and content. Verify microphone, camera, and hand in both directions: press the physical key, then change the visible Meet control and confirm the key follows the final state.",
       "Press Presentation while inactive. If the share flow opens, verify that Chrome or macOS requires source selection. If the Presentation key briefly shows ⌃⌘T, verify that Meet is focused, press Control+Command+T, and continue. In either path, confirm that no source is selected automatically, choose a synthetic source, confirm the Sharing key state, then press again to stop your own presentation.",
       "Leave the meeting and press each key; no browser control should activate. Join a second test meeting in another tab and verify commands remain blocked as ambiguous.",
@@ -75,7 +75,7 @@
     ],
     "releaseNotes": {
       "version": "0.1.0",
-      "text": "Initial release of Meet Deck. Adds four Stream Deck key actions for microphone, camera, raised hand, and the local user's presentation, with confirmed Google Meet state feedback. If browser user action is needed, the Presentation key briefly shows ⌃⌘T; press Control+Command+T in Meet to continue. Source selection remains in Chrome and macOS. Includes short-lived local pairing with the required Chrome companion, authenticated commands on 127.0.0.1, and safe no-click behavior when no single supported meeting is available. Supports macOS 12+, Stream Deck 7.1+, Chrome 147+, and English or German Google Meet controls. The Stream Deck settings are English and the companion setup screen is German."
+      "text": "Initial release of Meet Deck. Adds four Stream Deck key actions for microphone, camera, raised hand, and the local user's presentation, with confirmed Google Meet state feedback. If browser user action is needed, the Presentation key briefly shows ⌃⌘T; press Control+Command+T in Meet to continue. Source selection remains in Chrome and macOS. Includes short-lived local pairing with the required Chrome companion, authenticated commands on 127.0.0.1, and safe no-click behavior when no single supported meeting is available. Supports macOS 13+, Stream Deck 7.1+, Chrome 147+, and English or German Google Meet controls. The Stream Deck settings are English; the companion popup and onboarding follow Chrome's UI language in English or German."
     }
   },
   "media": {

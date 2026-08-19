@@ -19,8 +19,8 @@ paths are in [`listing.json`](listing.json).
 
 Upload `assets/small-promo-440x280.png`, all three ordered screenshots in `assets/`, and use the
 128×128 PNG already packaged as `icons/icon-128.png`. The promo is brand-led because promotional
-images are global rather than locale-specific. The screenshots use square, full-bleed 1280×800
-canvases and current built UI.
+images are global rather than locale-specific. The screenshots use full-bleed 1280×800 canvases and
+current built UI.
 
 ## Privacy practices
 
