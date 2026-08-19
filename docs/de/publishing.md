@@ -7,8 +7,8 @@ brechen.
 ## Release-Modell
 
 - SemVer-Tags haben die Form `vX.Y.Z`.
-- Root-Paket, Chrome-Manifest und vierteilige Stream-Deck-Version bleiben synchron (`X.Y.Z`
-  beziehungsweise `X.Y.Z.0`).
+- Root- und Workspace-Paketmetadaten, Lockfile, Chrome-Manifest und vierteilige Stream-Deck-Version
+  bleiben synchron (`X.Y.Z` beziehungsweise `X.Y.Z.0`).
 - GitHub ist die kanonische Quelle für Source und Build-Provenienz.
 - GitHub Actions baut Artefakte, enthält aber keine Zugangsdaten für Chrome Web Store oder Elgato
   Marketplace. Store-Einreichungen erfolgen manuell.
@@ -20,7 +20,8 @@ brechen.
 3. Extension-Rechte auf `storage` und `alarms`, Meet-only Content Script und Loopback-WebSocket-CSP
    prüfen. Im Chrome-Listing erklären, dass `alarms` nur einen lokalen Bridge-Reconnect-Wecktermin
    ohne Meetingdaten plant; jede Berechtigung erläutern.
-4. Mit Node 24 `npm ci`, `npm run check` und `npm run pack` ausführen.
+4. Mit Node 24 `npm ci`, `npm run release:verify -- vX.Y.Z`, `npm run check` und `npm run pack`
+   ausführen.
 5. [Hardware-E2E](hardware-e2e.md) auf minimaler und aktueller unterstützter Version durchführen,
    einschließlich LNA-Ablehnung und Picker-Abbruch.
 6. Gebaute Extension prüfen: keine unerwarteten Hosts, Remote-Code, Entwicklungs-URLs oder Source
@@ -30,8 +31,17 @@ brechen.
 8. Release Notes mit Änderungen, Kompatibilität, Security/Privacy-Auswirkung und bekannten
    Meet-UI-Grenzen verfassen.
 
-Danach Release-Commit und `vX.Y.Z` veröffentlichen. Der Release-Workflow läuft nur für `v*`-Tags und
-leitet `X.Y.Z` daraus ab. Bei Versionsabweichung schlägt er fehl.
+Den Release-Commit nach `main` pushen und den erfolgreichen CI-Lauf abwarten. Danach auf diesem
+Commit ein annotiertes (und, sofern verfügbar, signiertes) `vX.Y.Z`-Tag erstellen und pushen. Der
+Release-Workflow lehnt Tags ab, deren Commit nicht in `main` enthalten ist, leitet `X.Y.Z` aus dem
+Tag ab und schlägt bei jeder Abweichung in Paket-, Lockfile-, Manifest- oder internen
+Abhängigkeitsversionen fehl.
+
+Pull Requests und jeder gepushte Commit auf `main` durchlaufen Formatierung, Lint, Typprüfung,
+Tests, Build, Validierung und Paketierung vollständig. Veraltete Pull-Request-Läufe werden ersetzt;
+Post-Merge-Läufe auf `main` werden durch spätere Merges nicht abgebrochen. Release-Builds haben nur
+Lesezugriff auf das Repository. Erst der separate Publish-Job darf nach erfolgreichen Gates und
+Artefaktprüfungen das GitHub Release erstellen.
 
 ## GitHub-Artefakte
 

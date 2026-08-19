@@ -54,7 +54,7 @@ npm run pack
 Installable artifacts are written to `artifacts/`:
 
 - `dev.annonator.meet-deck.streamDeckPlugin`
-- `meet-deck-chrome-v0.1.0.zip`
+- `meet-deck-chrome-vX.Y.Z.zip`
 - `SHA256SUMS.txt`
 
 For development, load `apps/chrome-extension/dist/` as an unpacked extension in Chrome. Install the

@@ -6,8 +6,8 @@ Meet Deck is published publicly by **annonator**. The Stream Deck plugin UUID is
 ## Release model
 
 - Use SemVer Git tags of the form `vX.Y.Z`.
-- Keep the root package, Chrome manifest, and Stream Deck four-part manifest versions aligned
-  (`X.Y.Z` and `X.Y.Z.0`).
+- Keep the root and workspace package metadata, lockfile, Chrome manifest, and Stream Deck four-part
+  manifest versions aligned (`X.Y.Z` and `X.Y.Z.0`).
 - GitHub is the canonical source and build provenance.
 - GitHub Actions builds release artifacts but does not hold Chrome Web Store or Elgato Marketplace
   publishing credentials. Store submission is manual and separately reviewed.
@@ -20,7 +20,8 @@ Meet Deck is published publicly by **annonator**. The Stream Deck plugin UUID is
 3. Confirm extension permissions remain limited to `storage` and `alarms`, the Meet-only content
    script, and loopback WebSocket CSP. Explain that `alarms` only schedules a local bridge reconnect
    wakeup and carries no meeting data; explain every permission in the Chrome listing.
-4. Run `npm ci`, `npm run check`, and `npm run pack` with Node 24.
+4. Run `npm ci`, `npm run release:verify -- vX.Y.Z`, `npm run check`, and `npm run pack` with
+   Node 24.
 5. Complete [hardware E2E](hardware-e2e.md) on the declared minimum and current supported
    Chrome/Stream Deck versions, including LNA denial and screen-share cancellation.
 6. Review the built extension rather than the source directory: no source maps with secrets, remote
@@ -30,9 +31,16 @@ Meet Deck is published publicly by **annonator**. The Stream Deck plugin UUID is
 8. Update release notes with user-visible changes, compatibility changes, security/privacy impact,
    and known Google Meet UI limitations.
 
-Push the signed/annotated release commit, then create and push `vX.Y.Z`. The release workflow must
-run only for matching `v*` tags and must derive `X.Y.Z` from the tag. A tag/version mismatch fails
-the release.
+Push the release commit to `main` and wait for its CI run to pass. Then create an annotated (and,
+when available, signed) `vX.Y.Z` tag on that commit and push it. The release workflow rejects tags
+whose commit is not contained in `main`, derives `X.Y.Z` from the tag, and fails on any package,
+lockfile, manifest, or internal dependency version mismatch.
+
+Pull requests and every pushed commit on `main` run the complete format, lint, type-check, test,
+build, validation, and packaging gate. Pull-request reruns supersede stale runs, while post-merge
+`main` runs are never cancelled by a later merge. Release builds have read-only repository access;
+only the separate publish job receives permission to create the GitHub Release after all gates and
+artifact checks pass.
 
 ## GitHub release artifacts
 

@@ -27,7 +27,8 @@
     "typecheck": "npm run build:protocol && npm run typecheck --workspaces --if-present",
     "validate": "npm run validate --workspace @meet-deck/streamdeck-plugin",
     "pack": "node scripts/clean-artifacts.mjs && npm run build && npm run validate && npm run package --workspace @meet-deck/chrome-extension && npm run pack --workspace @meet-deck/streamdeck-plugin && node scripts/create-checksums.mjs",
-    "check": "npm run format:check && npm run lint && npm run typecheck && npm run test && npm run build && npm run validate"
+    "release:verify": "node scripts/verify-release.mjs",
+    "check": "npm run format:check && npm run lint && npm run release:verify && npm run typecheck && npm run test && npm run build && npm run validate"
   },
   "devDependencies": {
     "@elgato/cli": "1.8.1",
