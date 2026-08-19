@@ -10,6 +10,7 @@ export interface PublicBridgeStatus {
   readonly authentication: BridgeAuthentication;
   readonly connection: BridgeConnection;
   readonly meetingMultiplicity: MeetingMultiplicity;
+  readonly paired: boolean;
   readonly port: number;
   readonly problem?: BridgeProblem;
 }
@@ -18,11 +19,16 @@ export type BridgeProblem =
   | "authentication_failed"
   | "bridge_unavailable"
   | "invalid_pairing_code"
-  | "local_network_denied"
+  | "loopback_permission_denied"
+  | "loopback_permission_required"
   | "pairing_expired"
   | "protocol_error";
 
+export type ExtensionError =
+  BridgeProblem | "not_paired" | "request_failed" | "secure_storage_unavailable";
+
 export type ExtensionRequest =
+  | { readonly kind: "bridge.connect" }
   | { readonly kind: "bridge.status.get" }
   | { readonly kind: "bridge.pair"; readonly code: string }
   | { readonly kind: "bridge.pair.forget" }
@@ -30,7 +36,7 @@ export type ExtensionRequest =
 
 export type ExtensionResponse =
   | { readonly ok: true; readonly status: PublicBridgeStatus }
-  | { readonly error: string; readonly ok: false; readonly status: PublicBridgeStatus };
+  | { readonly error: ExtensionError; readonly ok: false; readonly status: PublicBridgeStatus };
 
 export function isExtensionRequest(value: unknown): value is ExtensionRequest {
   if (!isRecord(value) || typeof value.kind !== "string") {
@@ -38,6 +44,7 @@ export function isExtensionRequest(value: unknown): value is ExtensionRequest {
   }
 
   switch (value.kind) {
+    case "bridge.connect":
     case "bridge.status.get":
     case "bridge.pair.forget":
       return Object.keys(value).length === 1;
@@ -55,7 +62,7 @@ export function isExtensionResponse(value: unknown): value is ExtensionResponse 
     return false;
   }
 
-  return value.ok || typeof value.error === "string";
+  return value.ok || isExtensionError(value.error);
 }
 
 export function isPublicBridgeStatus(value: unknown): value is PublicBridgeStatus {
@@ -67,7 +74,14 @@ export function isPublicBridgeStatus(value: unknown): value is PublicBridgeStatu
   if (
     keys.some(
       (key) =>
-        !["authentication", "connection", "meetingMultiplicity", "port", "problem"].includes(key)
+        ![
+          "authentication",
+          "connection",
+          "meetingMultiplicity",
+          "paired",
+          "port",
+          "problem"
+        ].includes(key)
     )
   ) {
     return false;
@@ -77,13 +91,15 @@ export function isPublicBridgeStatus(value: unknown): value is PublicBridgeStatu
     isOneOfString(value.authentication, ["authenticated", "pairing", "rejected", "unpaired"]) &&
     isOneOfString(value.connection, ["connected", "connecting", "disconnected"]) &&
     isOneOfString(value.meetingMultiplicity, ["multiple", "none", "one"]) &&
+    typeof value.paired === "boolean" &&
     isBridgePort(value.port) &&
     (value.problem === undefined ||
       isOneOfString(value.problem, [
         "authentication_failed",
         "bridge_unavailable",
         "invalid_pairing_code",
-        "local_network_denied",
+        "loopback_permission_denied",
+        "loopback_permission_required",
         "pairing_expired",
         "protocol_error"
       ]))
@@ -99,6 +115,21 @@ export function isBridgePort(value: unknown): value is number {
   return (
     Number.isInteger(value) && Number(value) >= MIN_BRIDGE_PORT && Number(value) <= MAX_BRIDGE_PORT
   );
+}
+
+export function isExtensionError(value: unknown): value is ExtensionError {
+  return isOneOfString(value, [
+    "authentication_failed",
+    "bridge_unavailable",
+    "invalid_pairing_code",
+    "loopback_permission_denied",
+    "loopback_permission_required",
+    "not_paired",
+    "pairing_expired",
+    "protocol_error",
+    "request_failed",
+    "secure_storage_unavailable"
+  ]);
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

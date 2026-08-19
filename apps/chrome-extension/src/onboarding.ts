@@ -1,3 +1,7 @@
+import { localizeDocument, localizeMessage } from "./ui/i18n";
+
+localizeDocument();
+
 const openButton = document.getElementById("open-popup");
 const status = document.getElementById("onboarding-status");
 
@@ -12,7 +16,9 @@ async function openPopup(statusElement: HTMLElement): Promise<void> {
     await chrome.action.openPopup();
     statusElement.textContent = "";
   } catch {
-    statusElement.textContent =
-      "Pinne Meet Deck über das Erweiterungen-Menü und klicke anschließend auf das Symbol in der Toolbar.";
+    statusElement.textContent = localizeMessage(
+      "onboarding_open_popup_fallback",
+      "Pin Meet Deck from Chrome's Extensions menu, then select its icon in the toolbar."
+    );
   }
 }

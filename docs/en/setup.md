@@ -19,6 +19,13 @@ stores or carries no meeting, control, or authentication data. Website access re
 the Meet content script on `https://meet.google.com/*`, with no `tabs`, cookies, microphone, camera,
 or desktop-capture permission.
 
+Access to the local plugin is a separate optional Chrome extension host permission. Only when the
+user chooses **Pair and connect** or **Connect** does the popup request the exact configured
+`ws://127.0.0.1:<configured port>` origin, using the Chrome match pattern
+`ws://127.0.0.1:<configured port>/*`. Chrome completes the call without a prompt for an
+already-granted matching origin. The permission covers neither LAN hosts, `localhost`, another
+loopback address, nor all URLs; it has no wildcard scheme, host, or port.
+
 ## Install a release
 
 1. Download `dev.annonator.meet-deck.streamDeckPlugin`, the matching `meet-deck-chrome-vX.Y.Z.zip`,
@@ -40,14 +47,25 @@ release and press **Reload** on `chrome://extensions`.
 2. Keep the default `127.0.0.1:53421` endpoint unless the port is already used. If it is changed,
    enter the same port in the extension popup.
 3. Choose **Start pairing**. An eight-digit code is shown for two minutes.
-4. Open the Meet Deck Chrome toolbar popup, enter the code, and choose **Pair**.
-5. Approve Chrome's **Local Network Access** prompt if it appears. Access is used only for the
-   WebSocket to `127.0.0.1`; denying it leaves Meet Deck offline.
+4. Open the Meet Deck Chrome toolbar popup, enter the code, and choose **Pair and connect**. For a
+   stored pairing, choose **Connect**. Either clear user gesture lets the extension request only the
+   displayed configured loopback origin.
+5. If Chrome asks, approve the exact host match pattern `ws://127.0.0.1:<configured port>/*`. Denial
+   leaves Meet Deck offline without a remote fallback; an already-granted matching origin does not
+   prompt again.
 6. Confirm that both UI surfaces show **Connected**.
 
 Pairing one Chrome profile replaces the prior profile. Reinstalling either side or clearing
 extension storage requires pairing again. Never share a pairing code; it grants local control during
 its short validity window.
+
+Revoking the loopback host grant later stops new connections and reconnects. Choose **Pair and
+connect** or **Connect** to request it again. Changing the bridge port changes the origin and
+therefore requires host access for the new exact port; permission for one port is never treated as
+permission for another. Saving a changed port disconnects a stored pairing but does not itself ask
+for host access. After a successful change Meet Deck removes the superseded exact-port grant and
+reports a cleanup failure so it can be revoked manually. Use **Connect** after changing the port to
+grant and resume the saved pairing on the new origin.
 
 ## Use
 
@@ -97,8 +115,10 @@ Unlink the development bundle before installing a packed release.
 
 ## Troubleshooting
 
-- **Offline:** ensure the Stream Deck app is running, both sides use the same port, the LNA prompt
-  was allowed, and no other process owns the port. Re-pair rather than copying stored tokens.
+- **Offline:** ensure the Stream Deck app is running, both sides use the same port, and no other
+  process owns it. Choose **Pair and connect** or **Connect** and approve the exact
+  `ws://127.0.0.1:<configured port>/*` host match pattern if it was denied or revoked. Re-pair
+  rather than copying stored tokens.
 - **No meeting:** finish joining the meeting. The pre-join preview is excluded.
 - **Ambiguous meeting:** leave all but one joined Meet tab.
 - **Unsupported UI:** reload Meet and check that Chrome/Meet is English or German. Do not repeatedly

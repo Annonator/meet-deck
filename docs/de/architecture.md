@@ -41,17 +41,25 @@ flowchart LR
   Das Content Script läuft ausschließlich auf `https://meet.google.com/*`, liest die relevanten
   barrierefreien Zustände und betätigt nur ein eindeutig erkanntes Element.
 
-Die Erweiterung fordert nur `storage` und `alarms` sowie den Meet-spezifischen Content-Script-Match
-an. `storage` hält lokales Pairingtoken und Konfiguration. `alarms` plant einen benannten
-Wecktermin, damit ein pausierter MV3-Worker die Loopback-Bridge erneut verbinden kann; der Alarm
-enthält nur seinen festen Namen und Zeitpunkt, niemals Meeting- oder Steuerdaten. Keine der beiden
-Berechtigungen gewährt zusätzlichen Webseitenzugriff. Die Erweiterung fordert weder `tabs`,
-`cookies`, `webRequest`, `debugger`, `desktopCapture`, Mikrofon, Kamera noch breiten Hostzugriff an.
+Die Erweiterung benötigt nur `storage` und `alarms` sowie den Meet-spezifischen
+Content-Script-Match. `storage` hält lokales Pairingtoken und Konfiguration. `alarms` plant einen
+benannten Wecktermin, damit ein pausierter MV3-Worker die Loopback-Bridge erneut verbinden kann; der
+Alarm enthält nur seinen festen Namen und Zeitpunkt, niemals Meeting- oder Steuerdaten. Keine der
+beiden Berechtigungen gewährt zusätzlichen Webseitenzugriff. Eine getrennte optionale
+Hostberechtigung ist ausschließlich für `127.0.0.1` deklariert und wird erst durch **Koppeln und
+verbinden** oder **Verbinden** für den exakten konfigurierten Ursprung
+`ws://127.0.0.1:<konfigurierter Port>` angefragt. Chrome stellt die Anfrage als
+`ws://127.0.0.1:<konfigurierter Port>/*` dar; die notwendige Pfadangabe verbreitert weder Schema,
+Host noch Port. Die Berechtigung gewährt weder LAN-, `localhost`-, Remote-Host- noch
+All-URL-Zugriff. Die Erweiterung fordert weder `tabs`, `cookies`, `identity`, `webRequest`,
+`debugger`, `desktopCapture`, Mikrofon noch Kamera an.
 
 ## Daten- und Befehlsfluss
 
-1. Jedes Content Script meldet nur, ob sein eigenes Dokument beigetreten ist, sowie dessen endliche
-   Steuerzustände.
+1. Jedes Content Script prüft flüchtig Accessibility-Labels und Statusattribute sichtbarer
+   Meet-Schaltflächen und meldet anschließend nur, ob sein Dokument beigetreten ist, sowie dessen
+   endliche Steuerzustände. Die Chrome-Sender-URL dient nur der Prüfung der exakten aktiven
+   Top-Level-Meet-Origin und wird nicht in den Produktzustand kopiert.
 2. Der Service Worker prüft die vom Browser gelieferte Sender-/Dokumentidentität, führt die
    Tab-Registry, leitet `meetingMultiplicity` ab und sendet den datensparsamen Snapshot über die
    authentifizierte Loopback-Verbindung.
@@ -99,9 +107,15 @@ Nachrichten werden verworfen. Token, Pairingcode, Authentifizierungsnachweise un
 nie geloggt werden.
 
 Ein MV3-Service-Worker darf pausiert werden. Heartbeat und begrenztes exponentielles Reconnect
-stellen die Sitzung wieder her, ohne Authentifizierung zu umgehen. Chrome kann für den
-Loopback-WebSocket eine Abfrage für Local Network Access (LNA) anzeigen. Wird sie abgelehnt, bleibt
-Meet Deck offline; es gibt keinen Cloud-Fallback.
+stellen die Sitzung wieder her, ohne Authentifizierung zu umgehen. Vor einem Pairing- oder
+Verbindungsversuch im Vordergrund fragt das Popup über Chromes optionale Hostberechtigungs-API den
+exakten konfigurierten Ursprung `ws://127.0.0.1:<konfigurierter Port>` mit dem Match-Pattern
+`ws://127.0.0.1:<konfigurierter Port>/*` an, ausschließlich unmittelbar nach **Koppeln und
+verbinden** oder **Verbinden**. Eine bereits erteilte passende Freigabe braucht keine erneute
+Abfrage. Ablehnung blockiert diesen Versuch; Widerruf blockiert die nächste Verbindung oder
+Wiederverbindung, schließt aber nicht nachweislich einen bereits geöffneten WebSocket. Keiner der
+Zustände löst einen Umgehungs-Reconnect oder Cloud-Fallback aus. Ein Portwechsel erfordert Zugriff
+auf die neue exakte Origin und anschließend die Bereinigung der überholten exakten Portfreigabe.
 
 ## Grenze der Bildschirmfreigabe
 

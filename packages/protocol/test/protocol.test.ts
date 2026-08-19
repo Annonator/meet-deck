@@ -196,12 +196,18 @@ describe("application messages", () => {
         presentation: "inactive"
       })
     ).toBe(false);
-    expect(
-      isMeetingStateMessage({
-        ...validState(),
-        meetingCode: "abc-defg-hij"
-      })
-    ).toBe(false);
+    for (const [field, value] of [
+      ["meetingUrl", "https://meet.google.com/abc-defg-hij"],
+      ["meetingCode", "abc-defg-hij"],
+      ["meetingTitle", "Private planning"],
+      ["participantName", "Example Person"],
+      ["chat", "private message"],
+      ["captions", "private caption"],
+      ["account", "person@example.com"],
+      ["authToken", "secret"]
+    ] as const) {
+      expect(isMeetingStateMessage({ ...validState(), [field]: value })).toBe(false);
+    }
   });
 
   it.each(RESULT_STATUSES)("accepts result status %s", (status) => {

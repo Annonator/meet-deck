@@ -88,14 +88,27 @@ connections. Commands are idempotent `.set` operations, with at most one in-flig
 control. The content script revalidates that the sole matching element remains visible, connected,
 enabled, and semantically exact immediately before clicking; success requires observed state.
 
-## Chrome Local Network Access
+## Optional Chrome loopback host permission
 
-[Chrome 147 Local Network Access](https://developer.chrome.com/release-notes/147) can gate loopback
-connections behind an explicit permission. Meet Deck explains why it is needed and remains offline
-when it is denied. It must not work around denial with a public proxy, DNS rebinding, native
-messaging, or broader host permissions. Pairing is initiated by an explicit extension-popup click so
-Chrome can present LNA. Denial, revocation, and enterprise-policy blocking are stable offline
-states, not retry storms.
+[Chrome 147](https://developer.chrome.com/release-notes/147) can gate a loopback WebSocket behind
+explicit access. Meet Deck declares only an optional Chrome extension host capability for
+`127.0.0.1`; it does not receive that access at installation. An explicit **Pair and connect** or
+**Connect** click calls Chrome's permission request directly for the exact configured
+`ws://127.0.0.1:<configured port>` origin, expressed as the match pattern
+`ws://127.0.0.1:<configured port>/*`, preserving the user gesture. The required `/*` is Chrome
+match-pattern syntax; the request has no wildcard scheme, host, or port. Chrome completes that call
+without another prompt if the exact origin is already granted. The extension CSP independently
+remains limited to `ws://127.0.0.1:*`, while the WebSocket transport uses `/v1`. This is an
+extension host grant, not a website permission or website-settings prompt.
+
+An already-granted matching origin connects without another prompt. Denial and enterprise-policy
+blocking keep the attempted connection offline. Later revocation blocks the next connection or
+reconnect; an already-open WebSocket is not assumed to close immediately. These are stable states,
+not retry storms. A port change is a different origin and requires a grant for that exact new port;
+after saving it, Meet Deck removes the superseded exact-port grant and surfaces cleanup failure.
+Meet Deck never expands the request to LAN addresses, `localhost`, other loopback names/addresses, a
+wildcard scheme/host/port, or all URLs, and it must not work around a denial with a public proxy,
+DNS rebinding, native messaging, or a remote fallback.
 
 ## Required security tests
 
@@ -108,7 +121,8 @@ states, not retry storms.
 - reject content-script subframes, stale document identities, false sender data, and token access;
 - test hidden, disabled, duplicate, near-label, and lookup-to-click-mutated controls with zero
   clicks;
-- verify LNA allow/deny/revoke/enterprise block plus MV3 worker and plugin restart;
+- verify optional exact-loopback permission already-granted/allow/deny/revoke/port-change/enterprise
+  block paths plus MV3 worker and plugin restart, and prove no LAN or all-URL grant is requested;
 - verify the reconnect alarm has only its fixed name/timing, wakes only for a loopback retry, and
   clears when no longer needed;
 - inspect traffic, Chrome storage, Stream Deck global/action settings, exported profiles, and logs

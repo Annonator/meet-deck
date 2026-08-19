@@ -82,6 +82,9 @@ describe("BridgeClient authenticated transport", () => {
       }
     });
     globalThis.chrome = {
+      permissions: {
+        contains: vi.fn(async () => true)
+      },
       runtime: { id: EXTENSION_ID },
       storage: {
         local: {
@@ -295,6 +298,30 @@ describe("BridgeClient authenticated transport", () => {
 
     expect(bridge.status("none").port).toBe(53_421);
     expect(storage.has("meetDeck.bridge.v1")).toBe(false);
+  });
+
+  it("waits for a new exact-port grant before reconnecting after a paired port change", async () => {
+    const token = encodeBase64Url(new Uint8Array(32).fill(15));
+    storage.set("meetDeck.bridge.v1", { port: 53_421, token });
+    const bridge = createBridge();
+    await bridge.start();
+
+    await bridge.setPort(54_321);
+
+    expect(FakeWebSocket.instances).toHaveLength(1);
+    expect(bridge.status("none")).toMatchObject({
+      authentication: "pairing",
+      connection: "disconnected",
+      paired: true,
+      port: 54_321,
+      problem: "loopback_permission_required"
+    });
+
+    expect(bridge.resumeAfterPermissionGrant()).toBe(true);
+    expect(FakeWebSocket.instances).toHaveLength(2);
+    expect(FakeWebSocket.instances[1]?.url).toBe("ws://127.0.0.1:54321/v1");
+
+    await bridge.forgetPairing();
   });
 
   it("serialises parallel port writes and commits each only after persistence", async () => {

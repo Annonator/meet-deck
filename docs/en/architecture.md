@@ -41,16 +41,23 @@ flowchart LR
   A content script runs only on `https://meet.google.com/*`, reads the relevant accessible button
   state, and activates an unambiguous control.
 
-The extension requests only `storage` and `alarms`, plus a Meet-only content-script match. `storage`
+The extension requires only `storage` and `alarms`, plus a Meet-only content-script match. `storage`
 keeps the local pairing token and configuration. `alarms` schedules a named wakeup so a suspended
 MV3 worker can retry the loopback bridge; the alarm contains only its fixed name and timing, never
-meeting or control data. Neither permission grants additional website access. The extension does not
-request `tabs`, `cookies`, `webRequest`, `debugger`, `desktopCapture`, microphone, camera, or broad
-host access.
+meeting or control data. Neither permission grants additional website access. A separate optional
+host capability is declared only for `127.0.0.1` and requested from an explicit **Pair and connect**
+or **Connect** gesture for the exact configured `ws://127.0.0.1:<configured port>` origin. Chrome
+represents that request as `ws://127.0.0.1:<configured port>/*`; the required path marker does not
+broaden the scheme, host, or port. It grants no LAN, `localhost`, remote-host, or all-URL access.
+The extension does not request `tabs`, `cookies`, `identity`, `webRequest`, `debugger`,
+`desktopCapture`, microphone, or camera.
 
 ## Data and command flow
 
-1. Each content script reports whether its own document is joined plus its finite control states.
+1. Each content script transiently checks visible Meet button accessibility labels/state attributes,
+   then reports only whether its own document is joined plus its finite control states. Chrome's
+   sender URL is used only to validate the exact active top-level Meet origin and is not copied into
+   product state.
 2. The service worker validates browser-supplied sender/document identity, maintains the tab
    registry, derives `meetingMultiplicity`, and forwards a privacy-minimised snapshot over the
    authenticated loopback connection.
@@ -97,9 +104,13 @@ replay; invalid, oversized, wrong-direction, unknown-version, or structurally un
 are rejected. Tokens, pairing codes, proofs, and frame MACs must never appear in logs.
 
 The MV3 service worker may be suspended. A heartbeat and bounded exponential reconnect restore the
-local session without weakening authentication. Chrome may show a Local Network Access (LNA)
-permission prompt for the loopback WebSocket; denial leaves the extension disconnected and never
-triggers a cloud fallback.
+local session without weakening authentication. Before a foreground pairing or connection attempt,
+the popup requests the exact configured `ws://127.0.0.1:<configured port>` origin through Chrome's
+optional host-permission API, using `ws://127.0.0.1:<configured port>/*`, only from the **Pair and
+connect** or **Connect** gesture. An already-granted matching origin needs no prompt. Denial blocks
+that attempt; revocation blocks the next connection or reconnect but is not claimed to close an
+already-open WebSocket. Neither state triggers a retry workaround or cloud fallback. Changing the
+port requires access for the new exact origin, then cleanup of the superseded exact-port grant.
 
 ## Presentation boundary
 

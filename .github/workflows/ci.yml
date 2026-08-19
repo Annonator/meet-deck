@@ -71,8 +71,34 @@ jobs:
           (
             cd artifacts
             sha256sum -c SHA256SUMS.txt
+            unzip -tqq "meet-deck-chrome-v${version}.zip"
             entries="$(unzip -Z1 "meet-deck-chrome-v${version}.zip")"
+            expected_entries=(
+              "LICENSE"
+              "THIRD_PARTY_NOTICES"
+              "_locales/de/messages.json"
+              "_locales/en/messages.json"
+              "content-script.js"
+              "icons/icon-128.png"
+              "icons/icon-16.png"
+              "icons/icon-32.png"
+              "icons/icon-48.png"
+              "manifest.json"
+              "onboarding.css"
+              "onboarding.html"
+              "onboarding.js"
+              "popup.css"
+              "popup.html"
+              "popup.js"
+              "service-worker.js"
+            )
+            diff -u \
+              <(printf '%s\n' "${expected_entries[@]}") \
+              <(printf '%s\n' "$entries" | LC_ALL=C sort)
             grep -Fxq "manifest.json" <<< "$entries"
+            grep -Fxq "_locales/en/messages.json" <<< "$entries"
+            grep -Fxq "_locales/de/messages.json" <<< "$entries"
+            test "$(grep -c '^_locales/' <<< "$entries")" = "2"
             if grep -Eq '(^|/)(node_modules|\.DS_Store)(/|$)|\.map$|^\.\./|^/' <<< "$entries"; then
               echo "Chrome artifact contains a forbidden entry" >&2
               exit 1

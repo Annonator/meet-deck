@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="de">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Meet Deck</title>
+    <title data-i18n="app_name">Meet Deck</title>
     <link rel="stylesheet" href="popup.css" />
   </head>
   <body>
@@ -11,8 +11,8 @@
       <header class="brand">
         <span class="brand__mark" aria-hidden="true">MD</span>
         <div>
-          <h1>Meet Deck</h1>
-          <p>Local. Open Source. Ohne Meeting-Inhalte.</p>
+          <h1 data-i18n="app_name">Meet Deck</h1>
+          <p data-i18n="popup_tagline">Local. Open source. No meeting media or text.</p>
         </div>
       </header>
 
@@ -20,15 +20,32 @@
         <div class="status-row">
           <span id="status-dot" class="status-dot status-dot--offline" aria-hidden="true"></span>
           <div>
-            <h2 id="connection-heading">Verbindung</h2>
-            <p id="connection-status" aria-live="polite">Status wird geladen …</p>
+            <h2 id="connection-heading" data-i18n="popup_connection_heading">Connection</h2>
+            <p id="connection-status" aria-live="polite" data-i18n="popup_status_loading">
+              Loading status…
+            </p>
           </div>
         </div>
-        <p id="meeting-status" class="meeting-status">Kein steuerbares Meeting erkannt.</p>
+        <p id="meeting-status" class="meeting-status" data-i18n="meeting_none">
+          No controllable meeting detected.
+        </p>
       </section>
 
+      <button
+        id="connect-button"
+        class="button button--primary"
+        type="button"
+        data-i18n="popup_connect_button_default"
+        disabled
+        hidden
+      >
+        Connect
+      </button>
+
       <form id="pair-form" class="form" novalidate>
-        <label for="pair-code">Pairing-Code aus Stream Deck</label>
+        <label for="pair-code" data-i18n="popup_pairing_code_label">
+          Pairing code from Stream Deck
+        </label>
         <input
           id="pair-code"
           name="pair-code"
@@ -39,20 +56,28 @@
           pattern="[0-9]{8}"
           placeholder="12345678"
           aria-describedby="pair-help"
+          disabled
           required
         />
-        <p id="pair-help" class="help">
-          Pairing öffnet ausschließlich eine lokale Verbindung zu deinem Rechner.
+        <p id="pair-help" class="help" data-i18n="popup_pairing_help">
+          Pairing requests Chrome's optional host access only for the configured WebSocket origin on
+          127.0.0.1. No LAN or all-URL access is requested.
         </p>
-        <button id="pair-button" class="button button--primary" type="submit">
-          Sicher verbinden
+        <button
+          id="pair-button"
+          class="button button--primary"
+          type="submit"
+          data-i18n="popup_pair_button_default"
+          disabled
+        >
+          Pair and connect
         </button>
       </form>
 
       <details class="advanced">
-        <summary>Erweitert</summary>
+        <summary data-i18n="popup_advanced_heading">Advanced</summary>
         <form id="port-form" class="form form--compact" novalidate>
-          <label for="bridge-port">Lokaler Bridge-Port</label>
+          <label for="bridge-port" data-i18n="popup_bridge_port_label"> Local bridge port </label>
           <div class="inline-field">
             <input
               id="bridge-port"
@@ -60,18 +85,34 @@
               type="number"
               min="1024"
               max="65535"
+              value="53421"
+              disabled
               required
             />
-            <button class="button" type="submit">Speichern</button>
+            <button
+              id="port-save-button"
+              class="button"
+              type="submit"
+              data-i18n="popup_save_button"
+              disabled
+            >
+              Save
+            </button>
           </div>
         </form>
-        <button id="forget-button" class="button button--danger" type="button">
-          Pairing löschen
+        <button
+          id="forget-button"
+          class="button button--danger"
+          type="button"
+          data-i18n="popup_forget_button"
+          disabled
+        >
+          Forget pairing
         </button>
       </details>
 
       <p id="form-error" class="error" role="alert" hidden></p>
-      <footer>OSS von annonator · Nur localhost</footer>
+      <footer data-i18n="popup_footer">Open source by annonator · Loopback only</footer>
     </main>
     <script src="popup.js"></script>
   </body>

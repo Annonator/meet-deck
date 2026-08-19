@@ -1,0 +1,188 @@
+{
+  "app_name": {
+    "message": "Meet Deck"
+  },
+  "app_short_name": {
+    "message": "Meet Deck"
+  },
+  "app_description": {
+    "message": "Datenschutzorientierte lokale Google-Meet-Steuerung für Stream Deck."
+  },
+  "action_title": {
+    "message": "Meet Deck"
+  },
+  "popup_tagline": {
+    "message": "Lokal. Open Source. Keine Meeting-Medien oder -Texte."
+  },
+  "popup_connection_heading": {
+    "message": "Verbindung"
+  },
+  "popup_status_loading": {
+    "message": "Status wird geladen …"
+  },
+  "popup_pairing_code_label": {
+    "message": "Pairing-Code aus Stream Deck"
+  },
+  "popup_pairing_help": {
+    "message": "Beim Koppeln fordert Meet Deck Chromes optionale Hostberechtigung nur für die konfigurierte WebSocket-Origin auf 127.0.0.1 an. Es wird weder LAN- noch All-URL-Zugriff angefordert."
+  },
+  "popup_pair_button_default": {
+    "message": "Koppeln und verbinden"
+  },
+  "popup_pair_button_connecting": {
+    "message": "Wird gekoppelt und verbunden …"
+  },
+  "popup_connect_button_default": {
+    "message": "Verbinden"
+  },
+  "popup_connect_button_connecting": {
+    "message": "Verbindung wird hergestellt …"
+  },
+  "popup_advanced_heading": {
+    "message": "Erweitert"
+  },
+  "popup_bridge_port_label": {
+    "message": "Lokaler Bridge-Port"
+  },
+  "popup_save_button": {
+    "message": "Speichern"
+  },
+  "popup_forget_button": {
+    "message": "Pairing löschen"
+  },
+  "popup_footer": {
+    "message": "Open Source von annonator · Nur Loopback"
+  },
+  "error_background_unavailable": {
+    "message": "Der Meet-Deck-Hintergrunddienst ist nicht erreichbar. Lade die Erweiterung neu."
+  },
+  "error_invalid_pairing_code": {
+    "message": "Gib den achtstelligen Code aus dem Stream-Deck-Property-Inspector ein."
+  },
+  "error_invalid_bridge_port": {
+    "message": "Gib einen lokalen Bridge-Port zwischen 1024 und 65535 ein."
+  },
+  "error_loopback_permission_denied": {
+    "message": "Chrome hat den Zugriff auf die konfigurierte Loopback-Adresse abgelehnt. Wähle Koppeln oder Verbinden, um erneut anzufragen, oder prüfe die optionale Loopback-Hostberechtigung von Meet Deck unter chrome://extensions."
+  },
+  "error_loopback_permission_request_failed": {
+    "message": "Chrome konnte die Anfrage für die Loopback-Berechtigung nicht abschließen. Lass das Popup geöffnet und versuche es erneut."
+  },
+  "error_bridge_unavailable_pairing": {
+    "message": "Die lokale Stream-Deck-Bridge ist nicht erreichbar. Läuft die Stream-Deck-App und ist Pairing geöffnet?"
+  },
+  "error_bridge_message_failed": {
+    "message": "Die lokale Bridge konnte nicht angesprochen werden."
+  },
+  "error_port_save_failed": {
+    "message": "Der Port konnte nicht gespeichert werden."
+  },
+  "error_forget_failed": {
+    "message": "Das Pairing konnte nicht gelöscht werden."
+  },
+  "error_permission_cleanup_failed": {
+    "message": "Meet Deck hat die lokale Verbindung geändert, aber Chrome konnte die vorherige Loopback-Berechtigung nicht entfernen. Prüfe die optionale Loopback-Hostberechtigung von Meet Deck unter chrome://extensions."
+  },
+  "connection_connected": {
+    "message": "Sicher mit Stream Deck verbunden"
+  },
+  "connection_connecting": {
+    "message": "Verbindung zur lokalen Bridge wird hergestellt …"
+  },
+  "connection_unpaired": {
+    "message": "Noch nicht gekoppelt"
+  },
+  "connection_bridge_unavailable": {
+    "message": "Lokale Bridge nicht erreichbar"
+  },
+  "meeting_one": {
+    "message": "Ein laufendes Meeting ist steuerbar."
+  },
+  "meeting_multiple": {
+    "message": "Mehrere laufende Meetings erkannt – die Steuerung ist sicher blockiert."
+  },
+  "meeting_none": {
+    "message": "Kein steuerbares Meeting erkannt."
+  },
+  "problem_authentication_failed": {
+    "message": "Die gegenseitige Authentifizierung ist fehlgeschlagen. Kopple beide Seiten erneut."
+  },
+  "problem_bridge_unavailable": {
+    "message": "Die lokale Bridge ist nicht erreichbar. Läuft die Stream-Deck-App?"
+  },
+  "problem_invalid_pairing_code": {
+    "message": "Der Pairing-Code ist ungültig."
+  },
+  "problem_loopback_permission_denied": {
+    "message": "Chrome hat Meet Deck den Zugriff auf die konfigurierte Loopback-Adresse verweigert. Wähle Koppeln oder Verbinden, um erneut anzufragen."
+  },
+  "problem_loopback_permission_required": {
+    "message": "Chrome benötigt deine Zustimmung, bevor Meet Deck die konfigurierte Loopback-Adresse erreichen kann. Wähle Koppeln oder Verbinden, um fortzufahren."
+  },
+  "problem_pairing_expired": {
+    "message": "Der Pairing-Code ist abgelaufen. Erzeuge im Property Inspector einen neuen."
+  },
+  "problem_protocol_error": {
+    "message": "Die Bridge hat unerwartete Daten gesendet. Die Verbindung wurde vorsichtshalber beendet."
+  },
+  "error_request_failed": {
+    "message": "Die lokale Erweiterungsanfrage ist fehlgeschlagen."
+  },
+  "error_secure_storage_unavailable": {
+    "message": "Chrome konnte den Meet-Deck-Pairing-Schlüssel nicht auf vertrauenswürdige Erweiterungskontexte begrenzen."
+  },
+  "error_not_paired": {
+    "message": "Meet Deck ist noch nicht gekoppelt. Öffne Pairing in Stream Deck und gib den angezeigten Code ein."
+  },
+  "onboarding_title": {
+    "message": "Meet Deck einrichten"
+  },
+  "onboarding_eyebrow": {
+    "message": "Meet Deck · annonator"
+  },
+  "onboarding_heading": {
+    "message": "Dein Meeting bleibt in deinem Browser."
+  },
+  "onboarding_lead": {
+    "message": "Meet Deck verbindet Google Meet und Stream Deck ausschließlich über IPv4-Loopback. Keine Cloud, keine Telemetrie und keine Meeting-Medien oder -Kommunikation."
+  },
+  "onboarding_step_plugin_heading": {
+    "message": "Stream-Deck-Plugin installieren"
+  },
+  "onboarding_step_plugin_body": {
+    "message": "Installiere das Open-Source-Plugin und ziehe eine Meet-Deck-Aktion auf eine LCD-Taste."
+  },
+  "onboarding_step_pair_heading": {
+    "message": "Pairing öffnen"
+  },
+  "onboarding_step_pair_body": {
+    "message": "Erzeuge im Property Inspector einen achtstelligen Code. Er läuft schnell ab und funktioniert nur auf diesem Rechner."
+  },
+  "onboarding_step_connect_heading": {
+    "message": "Erweiterung verbinden"
+  },
+  "onboarding_step_connect_body": {
+    "message": "Öffne das Meet-Deck-Popup, gib den Code ein und wähle Koppeln und verbinden. Chrome kann dich auffordern, Meet Deck nur den Zugriff auf die konfigurierte WebSocket-Origin auf 127.0.0.1 zu erlauben."
+  },
+  "onboarding_privacy_heading": {
+    "message": "Was die Erweiterung verarbeitet"
+  },
+  "onboarding_privacy_yes": {
+    "message": "Lokal abgeleitet"
+  },
+  "onboarding_privacy_yes_body": {
+    "message": "Beschriftungen sichtbarer Bedienelemente werden flüchtig geprüft. Das lokale Plugin empfängt nur, ob null, ein oder mehrere Meetings aktiv sind, sowie endliche Mikrofon-, Kamera-, Hand- und Eigenpräsentationszustände."
+  },
+  "onboarding_privacy_no": {
+    "message": "Nie an das Plugin gesendet"
+  },
+  "onboarding_privacy_no_body": {
+    "message": "Keine Meeting-URLs, Codes, Titel, Namen, Chats, Untertitel, Audio-, Video- oder Bildschirmdaten."
+  },
+  "onboarding_open_popup_button": {
+    "message": "Meet Deck in der Toolbar öffnen"
+  },
+  "onboarding_open_popup_fallback": {
+    "message": "Pinne Meet Deck über das Chrome-Erweiterungen-Menü an und wähle anschließend das Symbol in der Toolbar."
+  }
+}
