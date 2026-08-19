@@ -17,13 +17,18 @@ brechen.
 
 1. Sauberen, vorgesehenen Release-Commit verwenden.
 2. Namen, Icons, Texte und Datenschutzhinweise auf `annonator` und `dev.annonator.meet-deck` prüfen.
-3. Extension-Rechte auf `storage` und `alarms`, Meet-only Content Script und Loopback-WebSocket-CSP
-   prüfen. Im Chrome-Listing erklären, dass `alarms` nur einen lokalen Bridge-Reconnect-Wecktermin
-   ohne Meetingdaten plant; jede Berechtigung erläutern.
+3. Erforderliche Extension-Rechte auf `storage`, `alarms` und das Meet-only Content Script
+   begrenzen. Optionalen Hostzugriff auf den durch **Koppeln und verbinden** oder **Verbinden**
+   angefragten exakten konfigurierten Ursprung `ws://127.0.0.1:<konfigurierter Port>` über das
+   Match-Pattern `ws://127.0.0.1:<konfigurierter Port>/*` prüfen, ohne Wildcard-Schema/-Host/-Port,
+   LAN- oder All-URL-Zugriff; die Loopback-WebSocket-CSP muss eng bleiben. Im Chrome-Listing
+   erklären, dass `alarms` nur einen lokalen Bridge-Reconnect-Wecktermin ohne Meetingdaten plant;
+   jede Berechtigung erläutern.
 4. Mit Node 24 `npm ci`, `npm run release:verify -- vX.Y.Z`, `npm run check` und `npm run pack`
    ausführen.
 5. [Hardware-E2E](hardware-e2e.md) auf minimaler und aktueller unterstützter Version durchführen,
-   einschließlich LNA-Ablehnung und Picker-Abbruch.
+   einschließlich bereits erteilter, erlaubter, abgelehnter, widerrufener und nach Portwechsel neu
+   angefragter Loopback-Berechtigung sowie Picker-Abbruch.
 6. Gebaute Extension prüfen: keine unerwarteten Hosts, Remote-Code, Entwicklungs-URLs oder Source
    Maps mit Secrets.
 7. Plugin mit `npm run validate` prüfen und gepacktes Artefakt in einem sauberen Stream-Deck-Profil
@@ -56,16 +61,28 @@ Fixtures, lokale Einstellungen, Pairingmaterial, `.env` oder Store-Zugangsdaten 
 
 1. Publisher `annonator` mit starker MFA absichern.
 2. Exakt das ZIP des GitHub-Releases hochladen, nicht lokal neu bauen.
-3. Englische Store-Texte, Screenshots, Support-/Repository-Link und aktuellen
-   [Datenschutzhinweis](privacy.md) bereitstellen.
+3. Ein vollständiges englisches Standard-Listing und ein deutsch lokalisiertes Listing
+   bereitstellen; beide müssen zur unterstützten lokalisierten Extension-UI passen. Niemals
+   englische Versprechen für einen nur deutschsprachigen Build oder eine andere nicht unterstützte
+   Sprache veröffentlichen. Lokalisierte Beschreibungen sowie Support-, Repository- und aktuelle
+   englische und deutsche Datenschutzhinweise bereitstellen; Screenshots bleiben eine getrennte
+   Folgeaufgabe.
 4. Single Purpose angeben: lokale Stream-Deck-Steuerung von Google Meet.
-5. `storage`, das reine Reconnect-`alarms`, `https://meet.google.com/*`, Loopback-WebSocket, LNA und
-   Pairing erklären sowie bestätigen, dass keine Daten verkauft, remote verarbeitet oder für
-   Werbung/Analytics genutzt werden. Alarme enthalten nur festen Namen/Zeitplan und keine
-   Meetingdaten.
-6. Review-Schritte für Pairing und Test-Meet liefern. Der Reviewer muss die Freigabequelle weiterhin
+5. Angaben unter **Privacy practices** mit dem [Datenschutzhinweis](privacy.md) abgleichen. In der
+   aktuellen Taxonomie `Website content` für die flüchtige Prüfung unterstützter Meet-Controls/
+   abgeleiteten Zustand und `Authentication information` für das getrennte lokale zufällige
+   Meet-Deck-Pairing-Token angeben; lokale Verarbeitung ist kein Grund, keine Verarbeitung zu
+   deklarieren. Die Einhaltung der Nutzerdatenrichtlinie des Chrome Web Store einschließlich der
+   Limited-Use-Anforderungen ausdrücklich bestätigen.
+6. `storage`, das reine Reconnect-`alarms`, `https://meet.google.com/*` sowie die optionale exakte
+   Host-Match-Pattern-Anfrage `ws://127.0.0.1:<konfigurierter Port>/*` durch **Koppeln und
+   verbinden** oder **Verbinden** erklären. Bereits erteilte Freigabe, Ablehnung, das Blockieren
+   künftiger Verbindungen/Wiederverbindungen nach Widerruf und Portwechsel, Pairing, fehlenden
+   LAN-/All-URL-Zugriff und den Verzicht auf Verkauf, Remote-Verarbeitung, Werbung und Analytics
+   abdecken. Alarme enthalten nur festen Namen/Zeitplan und keine Meetingdaten.
+7. Review-Schritte für Pairing und Test-Meet liefern. Der Reviewer muss die Freigabequelle weiterhin
    selbst im Chrome-Picker wählen.
-7. Nach Freigabe Store-Version in Release Notes dokumentieren und die Kopplung der über den Store
+8. Nach Freigabe Store-Version in Release Notes dokumentieren und die Kopplung der über den Store
    installierten Extension mit dem Release-Plugin testen.
 
 Keinen Remote-Konfigurationsdienst und keinen remote gehosteten ausführbaren Code ergänzen. Neue
@@ -97,5 +114,9 @@ scheitern.
 
 - [Registrierung im Chrome Web Store](https://developer.chrome.com/docs/webstore/register/)
 - [Chrome-Erweiterung für den Store vorbereiten](https://developer.chrome.com/docs/webstore/prepare/)
+- [Optionale Extension-Berechtigungen](https://developer.chrome.com/docs/extensions/reference/api/permissions)
+- [Chrome-Web-Store-Listing lokalisieren](https://developer.chrome.com/docs/webstore/cws-dashboard-listing/)
+- [Datenschutzfelder im Chrome Web Store](https://developer.chrome.com/docs/webstore/cws-dashboard-privacy/)
+- [Limited-Use-Richtlinie des Chrome Web Store](https://developer.chrome.com/docs/webstore/program-policies/limited-use/)
 - [Elgato Plugin Distribution](https://docs.elgato.com/streamdeck/sdk/introduction/distribution/)
 - [Einreichung im Elgato Marketplace](https://docs.elgato.com/maker-console/submitting-products/)

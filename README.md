@@ -26,10 +26,17 @@ fallback.
 
 ## Privacy and security
 
-The extension can run only on `https://meet.google.com/*`. It does not request access to other sites
-and has no backend, analytics, OAuth, or remote code. The local protocol carries only finite control
-commands and coarse state such as microphone on/off. It never carries meeting URLs or codes, titles,
-participant names, chat, captions, audio, video, or screen content.
+The content script runs only on `https://meet.google.com/*`. When the user chooses **Pair and
+connect** or **Connect**, the extension requests optional Chrome host access only for the configured
+`ws://127.0.0.1:<configured port>` origin, using the exact Chrome match pattern
+`ws://127.0.0.1:<configured port>/*`. It never requests LAN or all-URL access. Denial blocks that
+connection; revocation blocks the next connection or reconnect without claiming Chrome immediately
+closes an already-open socket. Changing the port requires access to the new exact loopback origin;
+the request never uses a wildcard scheme, host, or port. Meet Deck has no backend, analytics, OAuth,
+or remote code. Of the information observed in Google Meet, the local protocol carries only derived
+meeting multiplicity, finite microphone/camera/hand/ self-presentation state, and bounded command
+results. It never carries accessibility labels, meeting URLs or codes, titles, participant names,
+chat, captions, audio, video, or screen content.
 
 The bridge binds only to IPv4 loopback, uses an explicit short-lived pairing flow, mutual HMAC
 authentication, direction-separated session keys, authenticated messages, and replay protection.

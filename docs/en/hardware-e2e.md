@@ -29,9 +29,29 @@ content.
    rejected after expiry.
 4. Submit five wrong codes. Verify pairing closes/rate-limits and only an explicit new pairing
    window restores it.
-5. Pair correctly and approve Chrome LNA. Confirm Connected on both sides.
-6. Unpair, deny LNA, and verify the extension remains offline without contacting a remote endpoint.
-   Re-enable/approve LNA and pair again.
+5. Test first-time denial on a clean Chrome profile/install, or on a valid test port whose origin
+   was never approved. Open a new pairing window, enter the code, choose **Pair and connect**, and
+   deny Chrome's prompt for `ws://127.0.0.1:<configured port>/*`. Verify pairing is not completed
+   and the extension stays offline without a retry storm or remote contact. Do not try to
+   manufacture this case by removing a previously approved optional grant: Chrome can restore that
+   grant silently.
+6. Reopen pairing if needed, choose **Pair and connect**, and approve the exact-port match pattern.
+   Confirm **Connected** on both sides. Inspect the grant: it must have no wildcard scheme, host, or
+   port and no LAN, `localhost`, or all-URL access. The WebSocket itself uses the same origin at
+   `/v1`.
+7. Force the paired extension into a disconnected state by stopping the local plugin/bridge. While
+   the popup shows **Connect**, choose it and verify that the already-granted origin causes no new
+   permission prompt. Restart the plugin and confirm recovery.
+8. Revoke the loopback host grant, then force a new connection by stopping and restarting the local
+   plugin/bridge. Verify that the next connection/reconnect is blocked without a retry storm or
+   remote contact; do not require Chrome to terminate a socket that was already open at revocation.
+   Choose **Connect** and confirm recovery. Chrome may restore a previously approved optional grant
+   without another prompt, so verify the resulting exact-port grant rather than requiring a dialog.
+9. Change and save the extension port, then configure the plugin to use that same new valid port.
+   Verify that saving alone disconnects the pairing and removes the old grant but opens no
+   permission prompt. Choose **Connect**; only `ws://127.0.0.1:<configured port>/*` for the new port
+   may be requested. Confirm the old grant is gone or that Meet Deck explicitly reports a cleanup
+   failure. Changing back must never broaden the granted host set.
 
 ## Meeting targeting
 

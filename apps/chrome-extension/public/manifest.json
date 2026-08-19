@@ -1,18 +1,20 @@
 {
   "manifest_version": 3,
-  "name": "Meet Deck",
-  "short_name": "Meet Deck",
-  "description": "Privacy-first local Google Meet controls for Stream Deck.",
+  "name": "__MSG_app_name__",
+  "short_name": "__MSG_app_short_name__",
+  "description": "__MSG_app_description__",
   "version": "0.1.0",
   "author": "annonator",
+  "default_locale": "en",
   "minimum_chrome_version": "147",
   "incognito": "not_allowed",
   "permissions": ["storage", "alarms"],
+  "optional_host_permissions": ["ws://127.0.0.1/*"],
   "background": {
     "service_worker": "service-worker.js"
   },
   "action": {
-    "default_title": "Meet Deck",
+    "default_title": "__MSG_action_title__",
     "default_icon": {
       "16": "icons/icon-16.png",
       "32": "icons/icon-32.png",

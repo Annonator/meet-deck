@@ -19,6 +19,13 @@ speichert und transportiert keine Meeting-, Steuer- oder Authentifizierungsdaten
 bleibt auf das Meet-Content-Script unter `https://meet.google.com/*` begrenzt, ohne `tabs`, Cookies,
 Mikrofon-, Kamera- oder Desktop-Capture-Berechtigung.
 
+Der Zugriff auf das lokale Plugin ist eine getrennte optionale Chrome-Extension-Hostberechtigung.
+Erst bei **Koppeln und verbinden** oder **Verbinden** fragt das Popup den exakten konfigurierten
+Ursprung `ws://127.0.0.1:<konfigurierter Port>` über das Chrome-Match-Pattern
+`ws://127.0.0.1:<konfigurierter Port>/*` an. Für eine bereits erteilte passende Freigabe beendet
+Chrome den Aufruf ohne neue Abfrage. Die Berechtigung umfasst weder LAN-Hosts, `localhost`, andere
+Loopback-Adressen noch alle URLs; Schema, Host und Port enthalten keine Wildcards.
+
 ## Release installieren
 
 1. `dev.annonator.meet-deck.streamDeckPlugin`, das passende `meet-deck-chrome-vX.Y.Z.zip` und
@@ -40,14 +47,26 @@ ersetzen und unter `chrome://extensions` **Neu laden** wählen.
 2. `127.0.0.1:53421` beibehalten, sofern der Port nicht belegt ist. Bei einer Änderung muss im
    Extension-Popup derselbe Port stehen.
 3. **Kopplung starten** wählen. Der achtstellige Code ist zwei Minuten gültig.
-4. Das Meet-Deck-Popup in Chrome öffnen, Code eingeben und **Koppeln** wählen.
-5. Falls Chrome **Zugriff auf das lokale Netzwerk** (LNA) abfragt, zustimmen. Der Zugriff gilt nur
-   dem WebSocket zu `127.0.0.1`; eine Ablehnung lässt Meet Deck offline.
+4. Das Meet-Deck-Popup in Chrome öffnen, Code eingeben und **Koppeln und verbinden** wählen. Für ein
+   gespeichertes Pairing **Verbinden** wählen. Beide eindeutigen Nutzeraktionen erlauben nur die
+   Anfrage für die angezeigte konfigurierte Loopback-Origin.
+5. Falls Chrome fragt, das exakte Host-Match-Pattern `ws://127.0.0.1:<konfigurierter Port>/*`
+   erlauben. Eine Ablehnung lässt Meet Deck ohne Remote-Fallback offline; bei bereits erteilter
+   passender Freigabe erscheint keine erneute Abfrage.
 6. In beiden Oberflächen den Status **Verbunden** prüfen.
 
 Eine neue Kopplung ersetzt das vorherige Chrome-Profil. Neuinstallation oder das Löschen des
 Extension-Speichers erfordert erneutes Koppeln. Einen Pairingcode nicht weitergeben; während seiner
 kurzen Gültigkeit erlaubt er lokale Steuerung.
+
+Ein späterer Widerruf der Loopback-Hostfreigabe beendet neue Verbindungen und Reconnects. **Koppeln
+und verbinden** oder **Verbinden** kann sie erneut anfragen. Ein Portwechsel ändert die Origin und
+erfordert daher Hostzugriff für exakt den neuen Port; eine Freigabe für einen Port gilt nie als
+Freigabe für einen anderen. Das Speichern eines geänderten Ports trennt ein gespeichertes Pairing,
+fragt aber selbst keinen Hostzugriff an. Nach erfolgreicher Änderung entfernt Meet Deck die
+überholte exakte Portfreigabe und meldet einen Bereinigungsfehler, damit sie manuell widerrufen
+werden kann. Nach dem Portwechsel über **Verbinden** die neue Origin freigeben und das gespeicherte
+Pairing fortsetzen.
 
 ## Bedienung
 
@@ -91,8 +110,10 @@ Vor Installation eines gepackten Releases das Entwicklungs-Bundle wieder entkopp
 
 ## Fehlersuche
 
-- **Offline:** Stream-Deck-App starten, gleichen Port prüfen, LNA erlauben und Portkonflikt
-  ausschließen. Lieber neu koppeln als gespeicherte Token kopieren.
+- **Offline:** Stream-Deck-App starten, gleichen Port prüfen und Portkonflikt ausschließen.
+  **Koppeln und verbinden** oder **Verbinden** wählen und das exakte Host-Match-Pattern
+  `ws://127.0.0.1:<konfigurierter Port>/*` erlauben, falls es abgelehnt oder widerrufen wurde.
+  Lieber neu koppeln als gespeicherte Token kopieren.
 - **Kein Meeting:** dem Meeting vollständig beitreten; die Vorschau zählt nicht.
 - **Mehrdeutig:** alle bis auf ein beigetretenes Meet-Tab verlassen.
 - **Nicht unterstützte UI:** Meet neu laden und deutsche/englische Sprache prüfen. Beim Melden keine

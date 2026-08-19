@@ -1,0 +1,250 @@
+{
+  "app_name": {
+    "message": "Meet Deck",
+    "description": "Extension name shown by Chrome and in the extension UI."
+  },
+  "app_short_name": {
+    "message": "Meet Deck",
+    "description": "Short extension name shown where Chrome has limited space."
+  },
+  "app_description": {
+    "message": "Privacy-first local Google Meet controls for Stream Deck.",
+    "description": "Short extension description shown by Chrome and the Chrome Web Store."
+  },
+  "action_title": {
+    "message": "Meet Deck",
+    "description": "Toolbar action title."
+  },
+  "popup_tagline": {
+    "message": "Local. Open source. No meeting media or text.",
+    "description": "Short privacy tagline in the popup."
+  },
+  "popup_connection_heading": {
+    "message": "Connection",
+    "description": "Heading above the connection status."
+  },
+  "popup_status_loading": {
+    "message": "Loading status…",
+    "description": "Initial popup status while the background worker responds."
+  },
+  "popup_pairing_code_label": {
+    "message": "Pairing code from Stream Deck",
+    "description": "Label for the eight-digit pairing code field."
+  },
+  "popup_pairing_help": {
+    "message": "Pairing requests Chrome's optional host access only for the configured WebSocket origin on 127.0.0.1. No LAN or all-URL access is requested.",
+    "description": "Explanation immediately below the pairing code field."
+  },
+  "popup_pair_button_default": {
+    "message": "Pair and connect",
+    "description": "Default label for the pairing submit button."
+  },
+  "popup_pair_button_connecting": {
+    "message": "Pairing and connecting…",
+    "description": "Pairing button label while a connection is being established."
+  },
+  "popup_connect_button_default": {
+    "message": "Connect",
+    "description": "Button that reconnects an already paired extension after permission recovery."
+  },
+  "popup_connect_button_connecting": {
+    "message": "Connecting…",
+    "description": "Stored-pair recovery button label while connecting."
+  },
+  "popup_advanced_heading": {
+    "message": "Advanced",
+    "description": "Heading for advanced popup settings."
+  },
+  "popup_bridge_port_label": {
+    "message": "Local bridge port",
+    "description": "Label for the numeric loopback bridge port."
+  },
+  "popup_save_button": {
+    "message": "Save",
+    "description": "Button that saves the bridge port."
+  },
+  "popup_forget_button": {
+    "message": "Forget pairing",
+    "description": "Button that removes the local pairing credential."
+  },
+  "popup_footer": {
+    "message": "Open source by annonator · Loopback only",
+    "description": "Footer emphasizing the publisher and loopback-only transport."
+  },
+  "error_background_unavailable": {
+    "message": "Meet Deck's background service is unavailable. Reload the extension.",
+    "description": "Shown when the popup cannot reach its service worker."
+  },
+  "error_invalid_pairing_code": {
+    "message": "Enter the eight-digit code from the Stream Deck Property Inspector.",
+    "description": "Shown when the pairing-code input is malformed."
+  },
+  "error_invalid_bridge_port": {
+    "message": "Enter a local bridge port from 1024 through 65535.",
+    "description": "Shown when the configured loopback port is invalid."
+  },
+  "error_loopback_permission_denied": {
+    "message": "Chrome denied access to the configured loopback address. Choose Pair or Connect to request it again, or review Meet Deck's optional loopback host access in chrome://extensions.",
+    "description": "Shown after the user denies the optional loopback host permission."
+  },
+  "error_loopback_permission_request_failed": {
+    "message": "Chrome could not complete the loopback permission request. Keep the popup open and try again.",
+    "description": "Shown when Chrome cannot complete the permission API request."
+  },
+  "error_bridge_unavailable_pairing": {
+    "message": "The local Stream Deck bridge is unavailable. Is the Stream Deck app running with pairing open?",
+    "description": "Shown when the bridge cannot be reached during pairing."
+  },
+  "error_bridge_message_failed": {
+    "message": "The local bridge could not be reached.",
+    "description": "Shown when an extension-to-worker bridge request fails."
+  },
+  "error_port_save_failed": {
+    "message": "The port could not be saved.",
+    "description": "Shown when saving the configured bridge port fails."
+  },
+  "error_forget_failed": {
+    "message": "The pairing could not be removed.",
+    "description": "Shown when removing the pairing credential fails."
+  },
+  "error_permission_cleanup_failed": {
+    "message": "Meet Deck changed the local connection, but Chrome could not remove the previous loopback permission. Review Meet Deck's optional loopback host access in chrome://extensions.",
+    "description": "Shown when unpairing succeeds but optional permission cleanup fails."
+  },
+  "connection_connected": {
+    "message": "Securely connected to Stream Deck",
+    "description": "Connection status after mutual authentication succeeds."
+  },
+  "connection_connecting": {
+    "message": "Connecting to the local bridge…",
+    "description": "Connection status while connecting or pairing."
+  },
+  "connection_unpaired": {
+    "message": "Not paired yet",
+    "description": "Connection status before initial pairing."
+  },
+  "connection_bridge_unavailable": {
+    "message": "Local bridge unavailable",
+    "description": "Connection status when a paired bridge cannot be reached."
+  },
+  "meeting_one": {
+    "message": "One active meeting can be controlled.",
+    "description": "Meeting status when exactly one joined meeting is available."
+  },
+  "meeting_multiple": {
+    "message": "Multiple active meetings detected—control is safely blocked.",
+    "description": "Meeting status when more than one joined meeting is detected."
+  },
+  "meeting_none": {
+    "message": "No controllable meeting detected.",
+    "description": "Meeting status when no joined meeting can be controlled."
+  },
+  "problem_authentication_failed": {
+    "message": "Mutual authentication failed. Pair both sides again.",
+    "description": "Detailed bridge problem shown after authentication failure."
+  },
+  "problem_bridge_unavailable": {
+    "message": "The local bridge is unavailable. Is the Stream Deck app running?",
+    "description": "Detailed bridge problem shown when the local plugin is unavailable."
+  },
+  "problem_invalid_pairing_code": {
+    "message": "The pairing code is invalid.",
+    "description": "Detailed bridge problem for an invalid code."
+  },
+  "problem_loopback_permission_denied": {
+    "message": "Chrome denied Meet Deck access to the configured loopback address. Choose Pair or Connect to request it again.",
+    "description": "Detailed bridge problem after loopback host permission denial."
+  },
+  "problem_loopback_permission_required": {
+    "message": "Chrome needs your approval before Meet Deck can reach the configured loopback address. Choose Pair or Connect to continue.",
+    "description": "Detailed bridge problem when the optional loopback host permission is missing."
+  },
+  "problem_pairing_expired": {
+    "message": "The pairing code has expired. Generate a new one in the Property Inspector.",
+    "description": "Detailed bridge problem for an expired pairing code."
+  },
+  "problem_protocol_error": {
+    "message": "The bridge sent unexpected data. The connection was closed as a precaution.",
+    "description": "Detailed bridge problem after protocol validation fails."
+  },
+  "error_request_failed": {
+    "message": "The local extension request failed.",
+    "description": "Generic stable service-worker request failure."
+  },
+  "error_secure_storage_unavailable": {
+    "message": "Chrome could not restrict the Meet Deck pairing credential to trusted extension contexts.",
+    "description": "Shown when trusted-context-only extension storage cannot be enabled."
+  },
+  "error_not_paired": {
+    "message": "Meet Deck is not paired yet. Open pairing in Stream Deck and enter the displayed code.",
+    "description": "Shown when reconnect is requested without a stored pairing credential."
+  },
+  "onboarding_title": {
+    "message": "Set up Meet Deck",
+    "description": "Browser tab title for onboarding."
+  },
+  "onboarding_eyebrow": {
+    "message": "Meet Deck · annonator",
+    "description": "Product and publisher label above the onboarding heading."
+  },
+  "onboarding_heading": {
+    "message": "Your meeting stays in your browser.",
+    "description": "Main onboarding heading."
+  },
+  "onboarding_lead": {
+    "message": "Meet Deck connects Google Meet and Stream Deck only over IPv4 loopback. No cloud, no telemetry, and no meeting media or communications.",
+    "description": "Introductory onboarding privacy summary."
+  },
+  "onboarding_step_plugin_heading": {
+    "message": "Install the Stream Deck plugin",
+    "description": "First onboarding step heading."
+  },
+  "onboarding_step_plugin_body": {
+    "message": "Install the open-source plugin and drag a Meet Deck action onto an LCD key.",
+    "description": "First onboarding step instructions."
+  },
+  "onboarding_step_pair_heading": {
+    "message": "Open pairing",
+    "description": "Second onboarding step heading."
+  },
+  "onboarding_step_pair_body": {
+    "message": "Generate an eight-digit code in the Property Inspector. It expires quickly and works only on this computer.",
+    "description": "Second onboarding step instructions."
+  },
+  "onboarding_step_connect_heading": {
+    "message": "Connect the extension",
+    "description": "Third onboarding step heading."
+  },
+  "onboarding_step_connect_body": {
+    "message": "Open the Meet Deck popup, enter the code, and choose Pair and connect. Chrome may ask you to allow Meet Deck to reach only the configured WebSocket origin on 127.0.0.1.",
+    "description": "Third onboarding step instructions describing the host-permission flow."
+  },
+  "onboarding_privacy_heading": {
+    "message": "What the extension processes",
+    "description": "Heading above the onboarding data summary."
+  },
+  "onboarding_privacy_yes": {
+    "message": "Locally derived",
+    "description": "Label for data that Meet Deck processes."
+  },
+  "onboarding_privacy_yes_body": {
+    "message": "Visible control labels are inspected transiently. The local plugin receives only whether zero, one, or multiple meetings are active plus finite microphone, camera, hand, and own-presentation states.",
+    "description": "Summary of the minimum derived state Meet Deck processes."
+  },
+  "onboarding_privacy_no": {
+    "message": "Never sent to the plugin",
+    "description": "Label for data that Meet Deck does not process."
+  },
+  "onboarding_privacy_no_body": {
+    "message": "No meeting URLs, codes, titles, names, chats, captions, audio, video, or screen data.",
+    "description": "Summary of meeting information Meet Deck does not process."
+  },
+  "onboarding_open_popup_button": {
+    "message": "Open Meet Deck in the toolbar",
+    "description": "Button that attempts to open the extension popup."
+  },
+  "onboarding_open_popup_fallback": {
+    "message": "Pin Meet Deck from Chrome's Extensions menu, then select its icon in the toolbar.",
+    "description": "Fallback shown when Chrome cannot open the popup programmatically."
+  }
+}

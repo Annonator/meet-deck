@@ -26,9 +26,33 @@ Freigabeinhalte enthalten.
 3. Pairing öffnen: exakt acht Stellen, Ablauf nach zwei Minuten und Ablehnung danach prüfen.
 4. Fünf falsche Codes senden: Pairing muss schließen/drosseln und nur bewusst wieder geöffnet werden
    können.
-5. Korrekt koppeln, Chrome-LNA erlauben und beidseitig **Verbunden** prüfen.
-6. Entkoppeln, LNA ablehnen und Offline-Zustand ohne Remote-Verbindung prüfen; danach LNA erlauben
-   und neu koppeln.
+5. Die erstmalige Ablehnung in einem sauberen Chrome-Profil/einer frischen Installation oder mit
+   einem noch nie genehmigten gültigen Testport prüfen. Neues Pairingfenster öffnen, Code eingeben,
+   **Koppeln und verbinden** wählen und Chromes Abfrage für `ws://127.0.0.1:<konfigurierter Port>/*`
+   ablehnen. Das Pairing darf nicht abgeschlossen werden; die Erweiterung muss ohne
+   Reconnect-Schleife oder Remote-Verbindung offline bleiben. Diesen Fall nicht durch Entfernen
+   einer früher genehmigten optionalen Freigabe erzeugen: Chrome kann sie ohne Abfrage
+   wiederherstellen.
+6. Pairing gegebenenfalls erneut öffnen, **Koppeln und verbinden** wählen und das exakte
+   Port-Match-Pattern erlauben. Beidseitig **Verbunden** prüfen. Die Freigabe darf weder
+   Wildcard-Schema/-Host/-Port noch LAN, `localhost` oder alle URLs umfassen. Der WebSocket
+   verwendet dieselbe Origin mit `/v1`.
+7. Durch Beenden des lokalen Plugins/der Bridge einen gekoppelten, aber getrennten Zustand erzeugen.
+   Während das Popup **Verbinden** zeigt, die Schaltfläche wählen und prüfen, dass für die bereits
+   erteilte Origin keine neue Berechtigungsabfrage erscheint. Plugin neu starten und
+   Wiederherstellung bestätigen.
+8. Loopback-Hostfreigabe widerrufen und durch Stoppen/Neustarten des lokalen Plugins/der Bridge eine
+   neue Verbindung erzwingen. Die nächste Verbindung/Wiederverbindung muss ohne Reconnect-Schleife
+   oder Remote-Kontakt blockiert sein; Chrome muss keinen beim Widerruf bereits geöffneten WebSocket
+   sofort schließen. **Verbinden** wählen und Wiederherstellung bestätigen. Chrome kann eine früher
+   genehmigte optionale Freigabe ohne neue Abfrage wiederherstellen; daher die resultierende exakte
+   Portfreigabe prüfen statt einen Dialog vorauszusetzen.
+9. Extension-Port ändern und speichern, dann das Plugin auf denselben neuen gültigen Port stellen.
+   Das Speichern allein muss das Pairing trennen und die alte Freigabe entfernen, darf aber keine
+   Berechtigungsabfrage öffnen. **Verbinden** wählen; nur `ws://127.0.0.1:<konfigurierter Port>/*`
+   für den neuen Port darf angefragt werden. Prüfen, dass die alte Freigabe entfernt ist oder Meet
+   Deck einen Bereinigungsfehler ausdrücklich meldet. Auch der Rückwechsel darf die freigegebenen
+   Hosts nicht verbreitern.
 
 ## Meeting-Ziel
 

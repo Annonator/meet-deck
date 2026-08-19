@@ -14,6 +14,7 @@ import {
 } from "./content/internal-protocol";
 import {
   isExtensionRequest,
+  type ExtensionError,
   type ExtensionRequest,
   type ExtensionResponse,
   type PublicBridgeStatus
@@ -104,7 +105,7 @@ chrome.runtime.onMessage.addListener((message: unknown, sender, sendResponse) =>
     .then(sendResponse)
     .catch(() => {
       const response: ExtensionResponse = {
-        error: "Die lokale Extension-Anfrage ist fehlgeschlagen.",
+        error: "request_failed",
         ok: false,
         status: publicStatus()
       };
@@ -133,6 +134,10 @@ chrome.alarms.onAlarm.addListener((alarm) => {
   }
 });
 
+chrome.permissions.onRemoved.addListener((permissions) => {
+  bridge.handleLoopbackPermissionRemoval(permissions.origins ?? []);
+});
+
 const bridgeReady = bridge.start().then(
   () => true,
   () => false
@@ -141,13 +146,17 @@ const bridgeReady = bridge.start().then(
 async function handleExtensionRequest(request: ExtensionRequest): Promise<ExtensionResponse> {
   if (!(await bridgeReady)) {
     return {
-      error: "Chrome konnte den Pairing-Schlüssel nicht auf sichere Extension-Kontexte begrenzen.",
+      error: "secure_storage_unavailable",
       ok: false,
       status: publicStatus()
     };
   }
 
   switch (request.kind) {
+    case "bridge.connect":
+      return bridge.resumeAfterPermissionGrant()
+        ? { ok: true, status: publicStatus() }
+        : { error: "not_paired", ok: false, status: publicStatus() };
     case "bridge.status.get":
       return { ok: true, status: publicStatus() };
     case "bridge.pair": {
@@ -290,21 +299,6 @@ function scheduleDurableReconnect(): void {
   void chrome.alarms.clear(RECONNECT_ALARM);
 }
 
-function pairingError(status: PublicBridgeStatus): string {
-  switch (status.problem) {
-    case "invalid_pairing_code":
-      return "Der Pairing-Code ist ungültig.";
-    case "pairing_expired":
-      return "Der Pairing-Code ist abgelaufen.";
-    case "authentication_failed":
-      return "Die gegenseitige Authentifizierung ist fehlgeschlagen.";
-    case "local_network_denied":
-      return "Chrome hat den lokalen Netzwerkzugriff abgelehnt.";
-    case "protocol_error":
-      return "Die Bridge hat eine ungültige Protokollnachricht gesendet.";
-    case "bridge_unavailable":
-    case undefined:
-      return "Die lokale Stream-Deck-Bridge ist nicht erreichbar.";
-  }
-  return "Die lokale Stream-Deck-Bridge ist nicht erreichbar.";
+function pairingError(status: PublicBridgeStatus): ExtensionError {
+  return status.problem ?? "bridge_unavailable";
 }

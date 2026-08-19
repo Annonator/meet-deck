@@ -23,6 +23,10 @@ import {
 
 import type { BridgeProblem, PublicBridgeStatus } from "../shared/extension-messages";
 import {
+  getLoopbackPermissionState,
+  loopbackPermissionOrigin
+} from "../shared/loopback-permission";
+import {
   createNonce,
   deriveSessionHmacKey,
   hmacSha256Bytes,
@@ -78,6 +82,7 @@ export class BridgeClient {
   #problem: BridgeProblem | undefined;
   #pendingPairingCode: string | undefined;
   #pairingGeneration = 0;
+  #permissionCheckGeneration = 0;
   #pairingCommitGeneration: number | undefined;
   #authAttempt: AuthAttempt | undefined;
   #session: AuthenticatedSession | undefined;
@@ -104,7 +109,7 @@ export class BridgeClient {
     this.#authentication = this.#settings.token === undefined ? "unpaired" : "pairing";
     this.#notify();
     if (this.#settings.token !== undefined) {
-      this.#connect();
+      await this.#connectStoredPairingIfPermitted();
     }
   }
 
@@ -113,6 +118,7 @@ export class BridgeClient {
       authentication: this.#authentication,
       connection: this.#connection,
       meetingMultiplicity,
+      paired: this.#settings.token !== undefined,
       port: this.#settings.port,
       ...(this.#problem === undefined ? {} : { problem: this.#problem })
     };
@@ -124,6 +130,8 @@ export class BridgeClient {
       this.#notify();
       return false;
     }
+
+    this.#permissionCheckGeneration += 1;
 
     // Pair grants persist the new token atomically. Do not let a second popup
     // action overtake an in-flight durable commit.
@@ -155,6 +163,7 @@ export class BridgeClient {
   }
 
   async forgetPairing(): Promise<void> {
+    this.#permissionCheckGeneration += 1;
     await this.#runSettingsOperation(async () => {
       const candidate: BridgeSettings = { port: this.#settings.port };
       await saveBridgeSettings(candidate);
@@ -174,23 +183,64 @@ export class BridgeClient {
   }
 
   async setPort(port: number): Promise<void> {
+    this.#permissionCheckGeneration += 1;
     await this.#runSettingsOperation(async () => {
+      if (port === this.#settings.port) {
+        return;
+      }
+
       const candidate: BridgeSettings =
         this.#settings.token === undefined ? { port } : { port, token: this.#settings.token };
       await saveBridgeSettings(candidate);
 
       this.#settings = candidate;
-      this.#problem = undefined;
-      this.#suppressReconnect = false;
       this.#disconnect(1000, "port changed");
       if (this.#settings.token !== undefined) {
         this.#authentication = "pairing";
-      }
-      if (this.#settings.token !== undefined || this.#pendingPairingCode !== undefined) {
-        this.#connect();
+        this.#problem = "loopback_permission_required";
+        this.#suppressReconnect = true;
+      } else {
+        this.#authentication = "unpaired";
+        this.#problem = undefined;
+        this.#suppressReconnect = false;
       }
       this.#notify();
     });
+  }
+
+  resumeAfterPermissionGrant(): boolean {
+    if (this.#settings.token === undefined) {
+      return false;
+    }
+
+    this.#permissionCheckGeneration += 1;
+    this.#pendingPairingCode = undefined;
+    this.#authentication = "pairing";
+    this.#problem = undefined;
+    this.#suppressReconnect = false;
+    this.#disconnect(1000, "loopback permission granted");
+    this.#connect();
+    return true;
+  }
+
+  handleLoopbackPermissionRemoval(origins: readonly string[]): void {
+    const currentOrigin = loopbackPermissionOrigin(this.#settings.port);
+    if (
+      this.#settings.token === undefined ||
+      currentOrigin === undefined ||
+      (!origins.includes(currentOrigin) && !origins.includes("ws://127.0.0.1/*"))
+    ) {
+      return;
+    }
+
+    this.#permissionCheckGeneration += 1;
+    this.#pendingPairingCode = undefined;
+    this.#authentication = "rejected";
+    this.#problem = "loopback_permission_required";
+    this.#suppressReconnect = true;
+    this.#settlePairWaiter(false);
+    this.#disconnect(1000, "loopback permission removed");
+    this.#notify();
   }
 
   publishMeetingState(): void {
@@ -214,6 +264,39 @@ export class BridgeClient {
     }
     this.#suppressReconnect = false;
     this.#clearReconnectTimer();
+    void this.#connectStoredPairingIfPermitted();
+  }
+
+  async #connectStoredPairingIfPermitted(): Promise<void> {
+    const permissionCheckGeneration = ++this.#permissionCheckGeneration;
+    const token = this.#settings.token;
+    if (token === undefined) {
+      if (this.#pendingPairingCode !== undefined) {
+        this.#connect();
+      }
+      return;
+    }
+
+    const port = this.#settings.port;
+    const permission = await getLoopbackPermissionState(port);
+    if (
+      this.#permissionCheckGeneration !== permissionCheckGeneration ||
+      this.#settings.token !== token ||
+      this.#settings.port !== port ||
+      this.#pendingPairingCode !== undefined
+    ) {
+      return;
+    }
+
+    if (permission !== "granted") {
+      this.#authentication = "rejected";
+      this.#problem = "loopback_permission_required";
+      this.#suppressReconnect = true;
+      this.#disconnect(1000, "loopback permission required");
+      this.#notify();
+      return;
+    }
+
     this.#connect();
   }
 
@@ -234,16 +317,19 @@ export class BridgeClient {
       socket = new WebSocket(createBridgeUrl(this.#settings.port), WEB_SOCKET_SUBPROTOCOL);
     } catch (error) {
       this.#connection = "disconnected";
-      const localNetworkDenied = error instanceof DOMException && error.name === "SecurityError";
-      this.#problem = localNetworkDenied ? "local_network_denied" : "bridge_unavailable";
-      if (localNetworkDenied) {
+      const loopbackPermissionDenied =
+        error instanceof DOMException && error.name === "SecurityError";
+      this.#problem = loopbackPermissionDenied
+        ? "loopback_permission_denied"
+        : "bridge_unavailable";
+      if (loopbackPermissionDenied) {
         this.#authentication = "rejected";
         this.#pendingPairingCode = undefined;
         this.#suppressReconnect = true;
         this.#settlePairWaiter(false);
       }
       this.#notify();
-      if (!localNetworkDenied) {
+      if (!loopbackPermissionDenied) {
         this.#scheduleReconnect();
       }
       return;
@@ -765,7 +851,7 @@ export class BridgeClient {
     this.#reconnectAttempt += 1;
     this.#reconnectTimer = setTimeout(() => {
       this.#reconnectTimer = undefined;
-      this.#connect();
+      void this.#connectStoredPairingIfPermitted();
     }, delay);
   }
 

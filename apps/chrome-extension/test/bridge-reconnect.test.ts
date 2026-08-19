@@ -68,16 +68,21 @@ class FakeWebSocket extends EventTarget {
 
 describe("BridgeClient reconnect invariants", () => {
   const storage = new Map<string, unknown>();
+  const permissionContains = vi.fn(async () => true);
   let originalChrome: typeof chrome | undefined;
   let originalWebSocket: typeof WebSocket;
 
   beforeEach(() => {
     storage.clear();
+    permissionContains.mockReset().mockResolvedValue(true);
     FakeWebSocket.instances.length = 0;
     originalChrome = globalThis.chrome;
     originalWebSocket = globalThis.WebSocket;
     globalThis.WebSocket = FakeWebSocket as unknown as typeof WebSocket;
     globalThis.chrome = {
+      permissions: {
+        contains: permissionContains
+      },
       runtime: { id: EXTENSION_ID },
       storage: {
         local: {
@@ -137,7 +142,7 @@ describe("BridgeClient reconnect invariants", () => {
     await bridge.forgetPairing();
   });
 
-  it("does not retry when Chrome synchronously denies Local Network Access", async () => {
+  it("does not retry when Chrome blocks loopback access", async () => {
     vi.useFakeTimers();
     let attempts = 0;
     globalThis.WebSocket = class {
@@ -154,7 +159,7 @@ describe("BridgeClient reconnect invariants", () => {
     expect(bridge.status("none")).toMatchObject({
       authentication: "rejected",
       connection: "disconnected",
-      problem: "local_network_denied"
+      problem: "loopback_permission_denied"
     });
     expect(attempts).toBe(1);
 
@@ -162,6 +167,127 @@ describe("BridgeClient reconnect invariants", () => {
     await vi.advanceTimersByTimeAsync(60_000);
     expect(attempts).toBe(1);
     expect(onStatusChange).toHaveBeenCalled();
+  });
+
+  it("does not open a background socket when the optional host grant is missing", async () => {
+    const token = tokenFor(12);
+    storage.set(STORAGE_KEY, { port: 53_421, token });
+    permissionContains.mockResolvedValueOnce(false);
+    const bridge = createBridge();
+
+    await bridge.start();
+
+    expect(permissionContains).toHaveBeenCalledWith({
+      origins: ["ws://127.0.0.1:53421/*"]
+    });
+    expect(FakeWebSocket.instances).toHaveLength(0);
+    expect(bridge.status("none")).toMatchObject({
+      authentication: "rejected",
+      connection: "disconnected",
+      paired: true,
+      problem: "loopback_permission_required"
+    });
+
+    bridge.retryConnection();
+    expect(FakeWebSocket.instances).toHaveLength(0);
+  });
+
+  it("resumes an existing pairing only after a foreground permission grant", async () => {
+    const token = tokenFor(14);
+    storage.set(STORAGE_KEY, { port: 53_421, token });
+    globalThis.WebSocket = class {
+      constructor() {
+        throw new DOMException("denied", "SecurityError");
+      }
+    } as unknown as typeof WebSocket;
+    const bridge = createBridge();
+
+    await bridge.start();
+    expect(bridge.status("none")).toMatchObject({
+      authentication: "rejected",
+      connection: "disconnected",
+      paired: true,
+      problem: "loopback_permission_denied"
+    });
+
+    globalThis.WebSocket = FakeWebSocket as unknown as typeof WebSocket;
+    expect(bridge.resumeAfterPermissionGrant()).toBe(true);
+    expect(FakeWebSocket.instances).toHaveLength(1);
+    expect(FakeWebSocket.instances[0]?.url).toBe("ws://127.0.0.1:53421/v1");
+    const resumedStatus = bridge.status("none");
+    expect(resumedStatus).toMatchObject({
+      authentication: "pairing",
+      connection: "connecting",
+      paired: true
+    });
+    expect(resumedStatus.problem).toBeUndefined();
+
+    await bridge.forgetPairing();
+  });
+
+  it("ignores a stale passive denial after foreground permission recovery", async () => {
+    const token = tokenFor(16);
+    storage.set(STORAGE_KEY, { port: 53_421, token });
+    const bridge = createBridge();
+    await bridge.start();
+    FakeWebSocket.instances[0]?.close();
+    const delayedPermission = deferred<boolean>();
+    permissionContains.mockImplementationOnce(() => delayedPermission.promise);
+
+    bridge.retryConnection();
+    await vi.waitFor(() => expect(permissionContains).toHaveBeenCalledTimes(2));
+    expect(bridge.resumeAfterPermissionGrant()).toBe(true);
+    expect(FakeWebSocket.instances).toHaveLength(2);
+
+    delayedPermission.resolve(false);
+    await flushMicrotasks();
+
+    const status = bridge.status("none");
+    expect(status).toMatchObject({
+      authentication: "pairing",
+      connection: "connecting",
+      paired: true
+    });
+    expect(status.problem).toBeUndefined();
+
+    await bridge.forgetPairing();
+  });
+
+  it("disconnects an active socket when its exact loopback grant is removed", async () => {
+    const token = tokenFor(18);
+    storage.set(STORAGE_KEY, { port: 53_421, token });
+    const bridge = createBridge();
+    await bridge.start();
+    const socket = FakeWebSocket.instances[0];
+
+    bridge.handleLoopbackPermissionRemoval(["ws://127.0.0.1:53421/*"]);
+
+    expect(socket?.readyState).toBe(FakeWebSocket.CLOSED);
+    expect(bridge.status("none")).toMatchObject({
+      authentication: "rejected",
+      connection: "disconnected",
+      paired: true,
+      problem: "loopback_permission_required"
+    });
+  });
+
+  it("stabilizes a disconnected pairing when its current grant is removed", async () => {
+    const token = tokenFor(20);
+    storage.set(STORAGE_KEY, { port: 53_421, token });
+    const bridge = createBridge();
+    await bridge.start();
+    FakeWebSocket.instances[0]?.close();
+
+    bridge.handleLoopbackPermissionRemoval(["ws://127.0.0.1:53421/*"]);
+
+    expect(bridge.status("none")).toMatchObject({
+      authentication: "rejected",
+      connection: "disconnected",
+      paired: true,
+      problem: "loopback_permission_required"
+    });
+    bridge.retryConnection();
+    expect(FakeWebSocket.instances).toHaveLength(1);
   });
 
   it("drops an auth challenge whose HMAC finishes after the socket was replaced", async () => {
@@ -181,6 +307,7 @@ describe("BridgeClient reconnect invariants", () => {
     await vi.waitFor(() => expect(signSpy).toHaveBeenCalledOnce());
     firstSocket?.close();
     bridge.retryConnection();
+    await vi.waitFor(() => expect(FakeWebSocket.instances).toHaveLength(2));
     const secondSocket = FakeWebSocket.instances[1];
     secondSocket?.open();
     expect(parseSent(secondSocket, 0)).toMatchObject({ type: "auth.hello" });
@@ -220,6 +347,7 @@ describe("BridgeClient reconnect invariants", () => {
     await vi.waitFor(() => expect(verifySpy).toHaveBeenCalledOnce());
     firstSocket?.close();
     bridge.retryConnection();
+    await vi.waitFor(() => expect(FakeWebSocket.instances).toHaveLength(2));
     const secondSocket = FakeWebSocket.instances[1];
     secondSocket?.open();
 
@@ -269,6 +397,7 @@ describe("BridgeClient reconnect invariants", () => {
 
     firstSocket?.close();
     bridge.retryConnection();
+    await vi.waitFor(() => expect(FakeWebSocket.instances).toHaveLength(2));
     const secondSocket = FakeWebSocket.instances[1];
     await authenticateStoredTokenSocket(bridge, secondSocket, token, 61);
     const messagesBeforeOldResult = secondSocket?.sent.length ?? 0;
@@ -329,6 +458,7 @@ describe("BridgeClient reconnect invariants", () => {
     await vi.waitFor(() => expect(signSpy).toHaveBeenCalledOnce());
     firstSocket?.close();
     bridge.retryConnection();
+    await vi.waitFor(() => expect(FakeWebSocket.instances).toHaveLength(2));
     const replacementSocket = FakeWebSocket.instances[1];
     await authenticateStoredTokenSocket(bridge, replacementSocket, token, 75);
 

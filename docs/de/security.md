@@ -86,14 +86,29 @@ Befehle sind idempotente `.set`-Operationen mit höchstens einer laufenden Aktio
 Unmittelbar vor dem Klick wird erneut geprüft, dass das einzige passende Element sichtbar,
 verbunden, aktiv und semantisch exakt ist; Erfolg verlangt den beobachteten Zielzustand.
 
-## Chrome Local Network Access
+## Optionale Chrome-Loopback-Hostberechtigung
 
-[Chrome 147 Local Network Access](https://developer.chrome.com/release-notes/147) kann
-Loopback-Verbindungen durch eine ausdrückliche Berechtigung schützen. Meet Deck erklärt sie und
-bleibt bei Ablehnung offline. Eine Ablehnung darf nicht mit Proxy, DNS-Rebinding, Native Messaging
-oder breiteren Hostrechten umgangen werden. Pairing beginnt per bewusstem Klick im Extension-Popup,
-damit Chrome LNA anzeigen kann. Ablehnung, Widerruf und Enterprise-Policy-Blockade sind stabile
-Offline-Zustände statt Retry-Schleifen.
+[Chrome 147](https://developer.chrome.com/release-notes/147) kann einen Loopback-WebSocket hinter
+einer ausdrücklichen Freigabe schützen. Meet Deck deklariert ausschließlich eine optionale
+Chrome-Extension-Hostberechtigung für `127.0.0.1`; bei der Installation wird sie nicht erteilt. Ein
+bewusster Klick auf **Koppeln und verbinden** oder **Verbinden** ruft Chromes Berechtigungsanfrage
+direkt für den exakten konfigurierten Ursprung `ws://127.0.0.1:<konfigurierter Port>` mit dem
+Match-Pattern `ws://127.0.0.1:<konfigurierter Port>/*` auf, damit die Nutzeraktivierung erhalten
+bleibt. Das notwendige `/*` gehört zu Chromes Match-Pattern-Syntax; Schema, Host und Port enthalten
+keine Wildcards. Chrome beendet diesen Aufruf ohne neue Abfrage, wenn die exakte Origin bereits
+freigegeben ist. Die Extension-CSP bleibt unabhängig auf `ws://127.0.0.1:*` begrenzt, während der
+WebSocket-Transport `/v1` verwendet. Es handelt sich um eine Extension-Hostfreigabe, nicht um eine
+Website-Berechtigung oder Website-Einstellung.
+
+Eine bereits erteilte passende Freigabe verbindet ohne neue Abfrage. Ablehnung und
+Enterprise-Policy-Blockade lassen den versuchten Verbindungsaufbau offline. Ein späterer Widerruf
+blockiert die nächste Verbindung oder Wiederverbindung; ein bereits geöffneter WebSocket gilt nicht
+als sofort geschlossen. Das sind stabile Zustände statt Retry-Schleifen. Ein Portwechsel ist eine
+andere Origin und erfordert eine Freigabe für exakt den neuen Port. Nach dem Speichern entfernt Meet
+Deck die überholte exakte Portfreigabe und zeigt einen Bereinigungsfehler an. Meet Deck erweitert
+die Anfrage nie auf LAN-Adressen, `localhost`, andere Loopback-Namen/-Adressen, ein Wildcard-Schema,
+einen Wildcard-Host/-Port oder alle URLs und umgeht eine Ablehnung nicht per öffentlichem Proxy,
+DNS-Rebinding, Native Messaging oder Remote-Fallback.
 
 ## Verpflichtende Security-Tests
 
@@ -107,7 +122,9 @@ Offline-Zustände statt Retry-Schleifen.
   scheitern;
 - versteckte, deaktivierte, doppelte, ähnliche und zwischen Suche/Klick veränderte Controls erzeugen
   null Klicks;
-- LNA erlauben/ablehnen/widerrufen/Enterprise-Block sowie MV3-/Plugin-Neustart testen;
+- bereits erteilte Freigabe, Erlauben, Ablehnung, Widerruf, Portwechsel und Enterprise-Block der
+  optionalen exakten Loopback-Berechtigung sowie MV3-/Plugin-Neustart testen und beweisen, dass
+  keine LAN- oder All-URL-Freigabe angefragt wird;
 - prüfen, dass der Reconnect-Alarm nur festen Namen/Zeitplan enthält, ausschließlich für einen
   Loopback-Versuch weckt und danach bei fehlendem Bedarf gelöscht wird;
 - Traffic, Chrome Storage, Stream-Deck-Global-/Action-Settings, exportiertes Profil und Logs
