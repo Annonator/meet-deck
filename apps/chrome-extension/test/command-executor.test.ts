@@ -115,6 +115,34 @@ describe("executeMeetCommand", () => {
     expect(replacementClick).not.toHaveBeenCalled();
   });
 
+  it("raises a hand through the current stable German accessibility label", async () => {
+    const hand = document.createElement("button");
+    hand.ariaLabel = "Melden";
+    hand.setAttribute("aria-pressed", "false");
+    const click = vi.fn(() => hand.setAttribute("aria-pressed", "true"));
+    hand.addEventListener("click", click);
+    document.body.append(hand);
+
+    await expect(
+      executeMeetCommand({ action: "hand.set", id: "hand-current-label", value: true })
+    ).resolves.toBe("ok");
+    expect(click).toHaveBeenCalledOnce();
+  });
+
+  it("lowers a hand through the current stable German accessibility label", async () => {
+    const hand = document.createElement("button");
+    hand.ariaLabel = "Melden";
+    hand.setAttribute("aria-pressed", "true");
+    const click = vi.fn(() => hand.setAttribute("aria-pressed", "false"));
+    hand.addEventListener("click", click);
+    document.body.append(hand);
+
+    await expect(
+      executeMeetCommand({ action: "hand.set", id: "hand-current-label-lower", value: false })
+    ).resolves.toBe("ok");
+    expect(click).toHaveBeenCalledOnce();
+  });
+
   it("requires explicit user action when starting a presentation is not confirmed", async () => {
     vi.useFakeTimers();
     const present = document.createElement("button");
@@ -124,6 +152,23 @@ describe("executeMeetCommand", () => {
     const outcome = executeMeetCommand({ action: "presentation.start", id: "command-4" });
     await vi.advanceTimersByTimeAsync(1_000);
     await expect(outcome).resolves.toBe("needs_user_action");
+  });
+
+  it("opens presentation flow through the current screen-sharing label", async () => {
+    vi.useFakeTimers();
+    const present = document.createElement("button");
+    present.ariaLabel = "Bildschirm teilen";
+    const click = vi.fn();
+    present.addEventListener("click", click);
+    document.body.append(present);
+
+    const outcome = executeMeetCommand({
+      action: "presentation.start",
+      id: "presentation-current-label"
+    });
+    await vi.advanceTimersByTimeAsync(1_000);
+    await expect(outcome).resolves.toBe("needs_user_action");
+    expect(click).toHaveBeenCalledOnce();
   });
 
   it("confirms stopping the user's own presentation", async () => {

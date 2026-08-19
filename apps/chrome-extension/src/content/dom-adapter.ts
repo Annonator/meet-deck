@@ -10,6 +10,7 @@ type ControlMeaning =
   | "camera.enable"
   | "hand.lower"
   | "hand.raise"
+  | "hand.toggle"
   | "leave"
   | "microphone.disable"
   | "microphone.enable"
@@ -19,8 +20,9 @@ type ControlMeaning =
 const LABELS: Readonly<Record<ControlMeaning, readonly string[]>> = Object.freeze({
   "camera.disable": ["Turn off camera", "Kamera deaktivieren", "Kamera ausschalten"],
   "camera.enable": ["Turn on camera", "Kamera aktivieren", "Kamera einschalten"],
-  "hand.lower": ["Lower hand", "Hand senken"],
+  "hand.lower": ["Lower hand", "Hand senken", "Meldung zurückziehen"],
   "hand.raise": ["Raise hand", "Hand heben"],
+  "hand.toggle": ["Hand raise", "Melden"],
   leave: ["Leave call", "Leave meeting", "Anruf beenden", "Anruf verlassen", "Meeting verlassen"],
   "microphone.disable": [
     "Turn off microphone",
@@ -34,7 +36,14 @@ const LABELS: Readonly<Record<ControlMeaning, readonly string[]>> = Object.freez
     "Mikrofon aktivieren",
     "Mikrofon einschalten"
   ],
-  "presentation.start": ["Present now", "Start presenting", "Jetzt präsentieren", "Präsentieren"],
+  "presentation.start": [
+    "Present now",
+    "Share screen",
+    "Start presenting",
+    "Bildschirm teilen",
+    "Jetzt präsentieren",
+    "Präsentieren"
+  ],
   "presentation.stop": [
     "Stop presenting",
     "Stop sharing",
@@ -120,23 +129,55 @@ function readHandControl(candidates: readonly HTMLElement[]): {
   readonly control?: MeetControl;
   readonly state: HandState;
 } {
+  const toggles = findControls(candidates, "hand.toggle");
   const lowering = findControls(candidates, "hand.lower");
   const raising = findControls(candidates, "hand.raise");
-  if (lowering.length + raising.length !== 1) {
+  const recognized = [...new Set([...toggles, ...lowering, ...raising])];
+  const pressedCandidates = recognized.filter((element) => element.hasAttribute("aria-pressed"));
+
+  if (pressedCandidates.length > 0) {
+    if (pressedCandidates.length !== 1 || toggles.length > 1) {
+      return { state: "unknown" };
+    }
+
+    const element = pressedCandidates[0];
+    if (element === undefined || (toggles.length === 1 && toggles[0] !== element)) {
+      return { state: "unknown" };
+    }
+
+    const pressed = readPressedState(element);
+    if (pressed === null || pressed === undefined) {
+      return { state: "unknown" };
+    }
+
+    const expectedPressed = lowering.includes(element)
+      ? true
+      : raising.includes(element)
+        ? false
+        : undefined;
+    if (expectedPressed !== undefined && expectedPressed !== pressed) {
+      return { state: "unknown" };
+    }
+
+    return {
+      control: toControl(element),
+      state: pressed ? "raised" : "lowered"
+    };
+  }
+
+  if (toggles.length > 0 || lowering.length + raising.length !== 1) {
     return { state: "unknown" };
   }
 
-  if (lowering.length === 1) {
-    const element = lowering[0];
-    return element === undefined
-      ? { state: "unknown" }
-      : { control: toControl(element), state: "raised" };
+  const element = lowering[0] ?? raising[0];
+  if (element === undefined) {
+    return { state: "unknown" };
   }
 
-  const element = raising[0];
-  return element === undefined
-    ? { state: "unknown" }
-    : { control: toControl(element), state: "lowered" };
+  return {
+    control: toControl(element),
+    state: lowering.length === 1 ? "raised" : "lowered"
+  };
 }
 
 function readPresentationControl(candidates: readonly HTMLElement[]): {
@@ -182,6 +223,20 @@ function matchesMeaning(rawLabel: string | null, meaning: ControlMeaning): boole
 
     return normalized.startsWith(label) && SHORTCUT_SUFFIX.test(normalized.slice(label.length));
   });
+}
+
+function readPressedState(element: HTMLElement): boolean | null | undefined {
+  const pressed = element.getAttribute("aria-pressed");
+  if (pressed === null) {
+    return undefined;
+  }
+  if (pressed === "true") {
+    return true;
+  }
+  if (pressed === "false") {
+    return false;
+  }
+  return null;
 }
 
 function isVisibleControl(element: HTMLElement): boolean {

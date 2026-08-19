@@ -2,6 +2,7 @@ const OBSERVED_ATTRIBUTES = [
   "aria-disabled",
   "aria-hidden",
   "aria-label",
+  "aria-pressed",
   "class",
   "disabled",
   "hidden",

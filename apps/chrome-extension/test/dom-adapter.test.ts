@@ -4,7 +4,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { inspectMeetDom } from "../src/content/dom-adapter";
 import { observeMeetDom } from "../src/content/dom-observer";
-import { ENGLISH_JOINED_FIXTURE, GERMAN_PRESENTING_FIXTURE } from "./fixtures/meet-dom";
+import {
+  CURRENT_GERMAN_JOINED_FIXTURE,
+  ENGLISH_JOINED_FIXTURE,
+  GERMAN_PRESENTING_FIXTURE
+} from "./fixtures/meet-dom";
 
 describe("inspectMeetDom", () => {
   beforeEach(() => {
@@ -33,6 +37,107 @@ describe("inspectMeetDom", () => {
       microphone: "off",
       selfPresentation: "active"
     });
+  });
+
+  it("recognises current German hand and screen-sharing accessibility labels", () => {
+    document.body.innerHTML = CURRENT_GERMAN_JOINED_FIXTURE;
+
+    expect(inspectMeetDom().state).toEqual({
+      camera: "off",
+      hand: "lowered",
+      joined: true,
+      microphone: "on",
+      selfPresentation: "inactive"
+    });
+  });
+
+  it("uses aria-pressed when Meet keeps a stable hand label", () => {
+    document.body.innerHTML = CURRENT_GERMAN_JOINED_FIXTURE.replace(
+      'aria-pressed="false"',
+      'aria-pressed="true"'
+    );
+
+    expect(inspectMeetDom().state.hand).toBe("raised");
+  });
+
+  it("publishes a new snapshot when only the hand pressed state changes", async () => {
+    document.body.innerHTML = CURRENT_GERMAN_JOINED_FIXTURE;
+    let hand = inspectMeetDom().state.hand;
+    const observer = observeMeetDom(document.documentElement, () => {
+      hand = inspectMeetDom().state.hand;
+    });
+
+    expect(hand).toBe("lowered");
+    document.querySelector('[aria-label="Melden"]')?.setAttribute("aria-pressed", "true");
+    await vi.waitFor(() => expect(hand).toBe("raised"));
+    observer.disconnect();
+  });
+
+  it("recognises current English hand and screen-sharing accessibility labels", () => {
+    document.body.innerHTML = `
+      <button aria-label="Leave call"></button>
+      <button aria-label="Hand raise" aria-pressed="false"></button>
+      <button aria-label="Share screen"></button>
+    `;
+
+    const snapshot = inspectMeetDom();
+    expect(snapshot.state.hand).toBe("lowered");
+    expect(snapshot.state.selfPresentation).toBe("inactive");
+  });
+
+  it("fails closed on an invalid pressed state", () => {
+    document.body.innerHTML = `
+      <button aria-label="Leave call"></button>
+      <button aria-label="Melden" aria-pressed="mixed"></button>
+    `;
+
+    const snapshot = inspectMeetDom();
+    expect(snapshot.state.hand).toBe("unknown");
+    expect(snapshot.controls.hand).toBeUndefined();
+  });
+
+  it("requires pressed state for a stable current hand label", () => {
+    document.body.innerHTML = `
+      <button aria-label="Leave call"></button>
+      <button aria-label="Melden"></button>
+    `;
+
+    const snapshot = inspectMeetDom();
+    expect(snapshot.state.hand).toBe("unknown");
+    expect(snapshot.controls.hand).toBeUndefined();
+  });
+
+  it("prefers the pressed self toggle over a participant hand action", () => {
+    document.body.innerHTML = `${CURRENT_GERMAN_JOINED_FIXTURE}
+      <button aria-label="Meldung zurückziehen"></button>
+    `;
+
+    const snapshot = inspectMeetDom();
+    expect(snapshot.state.hand).toBe("lowered");
+    expect(snapshot.controls.hand?.element.getAttribute("aria-label")).toBe("Melden");
+  });
+
+  it("fails closed with multiple pressed hand toggles", () => {
+    document.body.innerHTML = `
+      <button aria-label="Leave call"></button>
+      <button aria-label="Melden" aria-pressed="false"></button>
+      <button aria-label="Hand raise" aria-pressed="false"></button>
+    `;
+
+    const snapshot = inspectMeetDom();
+    expect(snapshot.state.hand).toBe("unknown");
+    expect(snapshot.controls.hand).toBeUndefined();
+  });
+
+  it("fails closed when a directional hand label contradicts pressed state", () => {
+    document.body.innerHTML = `
+      <button aria-label="Leave call"></button>
+      <button aria-label="Lower hand" aria-pressed="false"></button>
+    `;
+
+    const snapshot = inspectMeetDom();
+    expect(snapshot.state.hand).toBe("unknown");
+    expect(snapshot.controls.hand).toBeUndefined();
   });
 
   it("does not classify pre-join controls as a joined meeting", () => {
@@ -102,11 +207,15 @@ describe("inspectMeetDom", () => {
       <button aria-label="Leave call for confidential-project"></button>
       <button aria-label="Turn off microphone for another participant"></button>
       <button aria-label="Turn on camera (for Erika)"></button>
+      <button aria-label="Meldung zurückziehen von Erika"></button>
+      <button aria-label="Bildschirm teilen mit Erika"></button>
     `;
 
     const snapshot = inspectMeetDom();
     expect(snapshot.state.joined).toBe(false);
     expect(snapshot.state.microphone).toBe("unknown");
     expect(snapshot.state.camera).toBe("unknown");
+    expect(snapshot.state.hand).toBe("unknown");
+    expect(snapshot.state.selfPresentation).toBe("unknown");
   });
 });
