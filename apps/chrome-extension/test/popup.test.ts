@@ -8,6 +8,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ExtensionRequest, PublicBridgeStatus } from "../src/shared/extension-messages";
 
 const popupHtml = await readFile(resolve(process.cwd(), "public/popup.html"), "utf8");
+const popupCss = await readFile(resolve(process.cwd(), "public/popup.css"), "utf8");
 
 const UNPAIRED: PublicBridgeStatus = {
   authentication: "unpaired",
@@ -75,6 +76,10 @@ describe("popup pairing and loopback permission flow", () => {
     await vi.waitFor(() => {
       expect(requiredElement("form-error").textContent).toContain("Chrome denied access");
     });
+  });
+
+  it("keeps hidden state authoritative over authored form layout", () => {
+    expect(popupCss).toMatch(/\[hidden\]\s*\{[^}]*display:\s*none\s*!important;/u);
   });
 
   it("saves the exact granted port before sending the pairing code", async () => {

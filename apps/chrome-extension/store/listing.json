@@ -1,0 +1,83 @@
+{
+  "submissionReady": false,
+  "listing": {
+    "name": "Meet Deck",
+    "summary": "Privacy-first local Google Meet controls for Stream Deck.",
+    "detailedDescription": "Meet Deck connects your Stream Deck to Google Meet for local, state-aware meeting controls. The Chrome extension works with the free, open-source Meet Deck Stream Deck plugin; both components run on the same Mac and communicate only over IPv4 loopback.\n\nFeatures:\n- Mute or unmute your microphone, with confirmed live state on the Stream Deck key.\n- Turn your camera on or off, with confirmed live state.\n- Raise or lower your hand.\n- Open Google Meet's presentation flow and stop your own active presentation.\n- Safely block commands when no meeting, more than one joined meeting, or an unsupported control layout is detected.\n- English and German extension and Google Meet control support.\n\nPrivacy by design:\n- No Meet Deck account, backend, cloud relay, OAuth, analytics, advertising, telemetry, or remote logging.\n- The content script runs only on https://meet.google.com/.\n- Visible supported control labels and state attributes are inspected transiently. The local plugin receives only whether zero, one, or multiple meetings are active, finite microphone/camera/hand/own-presentation states, and bounded command results.\n- Meeting URLs or codes, titles, participant names, chat, captions, audio, video, and shared-screen content are never sent to the plugin.\n- Pairing uses a short-lived eight-digit code, a random credential, mutual authentication, and authenticated messages over 127.0.0.1.\n\nPermissions are narrowly scoped to local pairing and control:\n- storage keeps the configured loopback port and random Meet Deck pairing credential locally.\n- alarms provides a fixed-name wakeup for reconnecting the Manifest V3 service worker to the local plugin.\n- Google Meet access is limited to the supported controls on https://meet.google.com/.\n- Optional loopback access is requested only after you choose Pair and connect or Connect, and only for the exact configured WebSocket port on 127.0.0.1. No LAN, remote-host, or all-website access is requested.\n\nRequirements:\n- macOS 12 or newer\n- Google Chrome 147 or newer\n- Stream Deck 7.1 or newer\n- A Stream Deck with LCD keys\n- The matching Meet Deck Stream Deck plugin\n\nStarting a presentation always leaves screen, window, or tab selection and confirmation to Chrome and macOS. Meet Deck cannot select or capture a source silently.\n\nMeet Deck is an early-beta, open-source project. Google Meet does not provide a public API for these controls, so future Meet interface changes may require an update. Unknown controls fail safely instead of being clicked.\n\nGoogle Meet and Google Chrome are trademarks of Google LLC. Meet Deck is not affiliated with or endorsed by Google. Stream Deck and Elgato are trademarks of their respective owners.",
+    "category": "Communication",
+    "defaultLocale": "en",
+    "dashboardLanguage": "English",
+    "homepageUrl": "https://github.com/Annonator/meet-deck",
+    "supportUrl": "https://github.com/Annonator/meet-deck/issues",
+    "privacyPolicyUrl": "https://github.com/Annonator/meet-deck/blob/main/docs/en/privacy.md",
+    "officialUrl": null,
+    "matureContent": false
+  },
+  "privacy": {
+    "singlePurpose": "Provide state-synchronized Stream Deck controls for one active Google Meet by linking the Meet page to the locally installed companion plugin over an authenticated loopback connection.",
+    "remoteCode": {
+      "usesRemoteCode": false,
+      "justification": "No remotely hosted executable code, configuration that changes executable behavior, eval, or external script is used. All JavaScript executed by the extension is bundled in the submitted ZIP."
+    },
+    "dataUse": {
+      "selected": ["Website content", "Authentication information"],
+      "notSelected": [
+        "Personally identifiable information",
+        "Health information",
+        "Financial and payment information",
+        "Personal communications",
+        "Location",
+        "Web history",
+        "User activity"
+      ],
+      "websiteContentJustification": "The Meet-only content script transiently inspects visible supported control accessibility labels and state attributes to derive finite meeting and control states and to activate a requested supported control. It does not retain or send meeting URLs, names, chat, captions, audio, video, or screen contents.",
+      "authenticationInformationJustification": "Meet Deck stores a random 256-bit local pairing credential in chrome.storage.local and uses it only for mutual authentication with the companion plugin over 127.0.0.1. It is not a Google credential, password, cookie, OAuth token, or remote account credential.",
+      "soldOrTransferred": false,
+      "usedForAdvertising": false,
+      "usedForCreditworthiness": false,
+      "humanReadableRemotely": false
+    },
+    "limitedUseCertifications": {
+      "noSaleOrTransferOutsideApprovedCases": true,
+      "noUseOrTransferForUnrelatedPurposes": true,
+      "noUseOrTransferForCreditworthinessOrLending": true
+    }
+  },
+  "permissionJustifications": {
+    "storage": "Stores only the configured loopback port and the random Meet Deck pairing credential in chrome.storage.local. The credential is restricted to trusted extension contexts and remains on this computer until the user forgets pairing, clears extension storage, or removes the extension.",
+    "alarms": "Creates a fixed-name wakeup schedule so the Manifest V3 service worker can retry its authenticated connection to the local plugin after suspension. The alarm contains no meeting, control, authentication, or user data.",
+    "https://meet.google.com/*": "Runs the content script only on Google Meet to transiently identify the supported microphone, camera, hand, and own-presentation controls, read their finite visible states, and activate a requested supported control. It does not access meeting media, chat, captions, participant data, cookies, or Google credentials.",
+    "ws://127.0.0.1/*": "Optional host access is requested only from the user gesture on Pair and connect or Connect and only for the exact configured ws://127.0.0.1:<port>/* origin. It enables the authenticated local WebSocket connection to the companion plugin. No LAN, localhost alias, remote-host, wildcard-scheme, wildcard-host, wildcard-port, or all-website access is requested."
+  },
+  "reviewer": {
+    "companionPluginDownloadUrl": null,
+    "additionalInstructionsTemplate": "Requires macOS 12+, Chrome 147+, Stream Deck 7.1+, hardware, and the matching plugin: {COMPANION_PLUGIN_URL}. Install the plugin; add an action; in its Property Inspector choose Start pairing. In the popup enter the 8-digit code and choose Pair and connect; allow only ws://127.0.0.1:53421/*. Join one synthetic Meet and test microphone, camera, hand, and presentation. Chrome/macOS must still require share-source confirmation. No account or credentials.",
+    "fullProcedure": [
+      "Download and install the same-version Meet Deck .streamDeckPlugin artifact from the supplied public URL, then restart Stream Deck if requested.",
+      "Place any Meet Deck action on an LCD key. In its Property Inspector choose Start pairing and keep the displayed eight-digit code visible.",
+      "Open the extension popup, enter that code, and choose Pair and connect. Approve only the exact ws://127.0.0.1:53421/* origin if Chrome prompts. The popup should report a secure connection.",
+      "Join exactly one synthetic Google Meet. Verify microphone, camera, and hand commands and their live key states. Do not use real participants or meeting information.",
+      "Choose the presentation action. Verify Chrome still requires the reviewer to choose and confirm a share source; canceling the picker must not start sharing. After sharing, verify the same action can stop the reviewer's own presentation.",
+      "Open a second joined Meet tab and verify commands are safely blocked while multiple meetings are active.",
+      "Revoke the optional loopback host permission and verify a future connection or reconnect remains offline until Connect is chosen and permission is granted again.",
+      "Choose Forget pairing and verify the credential and current exact-port grant are removed while the configured port remains."
+    ],
+    "testAccount": "None required",
+    "testCredentials": "None"
+  },
+  "media": {
+    "smallPromoTile": "assets/small-promo-440x280.png",
+    "screenshots": [
+      "assets/01-pair-locally.png",
+      "assets/02-connected-controls.png",
+      "assets/03-private-by-design.png"
+    ],
+    "storeIconInPackage": "dist/icons/icon-128.png"
+  },
+  "remainingBeforeSubmission": [
+    "Publish the exact same-version companion .streamDeckPlugin artifact at a stable public URL and replace {COMPANION_PLUGIN_URL} in the reviewer instructions.",
+    "Merge and publish the privacy and support pages at the listed public main-branch URLs, then verify them while signed out.",
+    "Add a German localized detailed description and German screenshots in the dashboard because the extension ships a de locale.",
+    "Upload the draft ZIP and confirm dashboard-generated permission warnings, image acceptance, listing field limits, and reviewer-instruction controls before submission."
+  ]
+}
