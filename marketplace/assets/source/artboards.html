@@ -1,0 +1,1111 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Meet Deck Marketplace artboards</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family: Arial, Helvetica, sans-serif;
+        color: #f7f9fc;
+        background: transparent;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+      }
+
+      body {
+        background: transparent;
+      }
+
+      .artboard {
+        position: fixed;
+        inset: 0;
+        display: none;
+        overflow: hidden;
+      }
+
+      body[data-asset="app-icon"] .asset-app-icon,
+      body[data-asset="thumbnail"] .asset-thumbnail,
+      body[data-asset="gallery-01-controls"] .asset-gallery-01-controls,
+      body[data-asset="gallery-02-pairing"] .asset-gallery-02-pairing,
+      body[data-asset="gallery-03-privacy"] .asset-gallery-03-privacy {
+        display: block;
+      }
+
+      .marketplace-background {
+        background:
+          radial-gradient(circle at 88% 5%, rgb(130 78 232 / 25%), transparent 33%),
+          radial-gradient(circle at 8% 96%, rgb(57 119 232 / 22%), transparent 36%), #090d13;
+      }
+
+      .marketplace-background::before {
+        position: absolute;
+        inset: 0;
+        background-image:
+          linear-gradient(rgb(255 255 255 / 3.2%) 1px, transparent 1px),
+          linear-gradient(90deg, rgb(255 255 255 / 3.2%) 1px, transparent 1px);
+        background-size: 64px 64px;
+        content: "";
+        mask-image: linear-gradient(to bottom, black, transparent 86%);
+      }
+
+      .orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(2px);
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 14px;
+        color: #75a7ff;
+        font-size: 22px;
+        font-weight: 800;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+      }
+
+      .eyebrow::before {
+        width: 42px;
+        height: 4px;
+        border-radius: 2px;
+        background: linear-gradient(90deg, #3977e8, #824ee8);
+        content: "";
+      }
+
+      h1,
+      h2,
+      p {
+        margin: 0;
+      }
+
+      .asset-app-icon {
+        background: transparent;
+      }
+
+      .listing-icon {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+        border-radius: 64px;
+        background:
+          radial-gradient(circle at 18% 12%, rgb(92 142 255 / 16%), transparent 42%), #111827;
+      }
+
+      .listing-icon::after {
+        position: absolute;
+        inset: 1px;
+        border: 1px solid rgb(255 255 255 / 6%);
+        border-radius: 63px;
+        content: "";
+      }
+
+      .listing-icon__camera {
+        position: absolute;
+        top: 82px;
+        left: 42px;
+        width: 158px;
+        height: 124px;
+        border-radius: 28px;
+        background: linear-gradient(145deg, #3f8af1, #2f77e9);
+        box-shadow: 0 20px 48px rgb(21 77 173 / 26%);
+      }
+
+      .listing-icon__camera::before {
+        position: absolute;
+        top: 34px;
+        left: 38px;
+        width: 88px;
+        height: 56px;
+        border-radius: 14px;
+        background: #f7f9fc;
+        content: "";
+      }
+
+      .listing-icon__camera::after {
+        position: absolute;
+        top: 48px;
+        left: 54px;
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: #317ceb;
+        box-shadow: 44px 0 0 #45c77b;
+        content: "";
+      }
+
+      .listing-icon__lens {
+        position: absolute;
+        top: 96px;
+        left: 194px;
+        width: 58px;
+        height: 96px;
+        border-radius: 18px 28px 28px 18px;
+        background: linear-gradient(145deg, #4bd187, #3dba72);
+        clip-path: polygon(0 23%, 74% 0, 100% 10%, 100% 90%, 74% 100%, 0 77%);
+      }
+
+      .asset-thumbnail {
+        padding: 88px 104px;
+      }
+
+      .thumbnail-copy {
+        position: relative;
+        z-index: 2;
+        width: 870px;
+      }
+
+      .thumbnail-copy h1 {
+        margin-top: 30px;
+        font-size: 116px;
+        line-height: 0.96;
+        letter-spacing: -0.065em;
+      }
+
+      .thumbnail-copy .tagline {
+        max-width: 760px;
+        margin-top: 30px;
+        color: #b9c4d2;
+        font-size: 38px;
+        line-height: 1.28;
+        letter-spacing: -0.025em;
+      }
+
+      .qualifiers {
+        display: flex;
+        gap: 14px;
+        margin-top: 44px;
+      }
+
+      .qualifier {
+        padding: 13px 19px;
+        border: 1px solid #2e3b4f;
+        border-radius: 999px;
+        background: rgb(17 24 39 / 78%);
+        color: #dce5f1;
+        font-size: 19px;
+        font-weight: 700;
+      }
+
+      .qualifier--local {
+        border-color: rgb(71 217 139 / 38%);
+        color: #8eeab8;
+      }
+
+      .thumbnail-stage {
+        position: absolute;
+        top: 70px;
+        right: 84px;
+        width: 780px;
+        height: 820px;
+      }
+
+      .browser-card {
+        position: absolute;
+        top: 28px;
+        right: 6px;
+        width: 584px;
+        height: 318px;
+        overflow: hidden;
+        border: 1px solid #35445a;
+        border-radius: 26px;
+        background: rgb(19 25 35 / 94%);
+        box-shadow: 0 34px 90px rgb(0 0 0 / 42%);
+      }
+
+      .browser-card__bar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        height: 58px;
+        padding: 0 22px;
+        border-bottom: 1px solid #293548;
+        background: #171e29;
+      }
+
+      .browser-card__dot {
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        background: #435168;
+      }
+
+      .browser-card__address {
+        flex: 1;
+        margin-left: 8px;
+        padding: 8px 16px;
+        border-radius: 8px;
+        background: #0d121a;
+        color: #758296;
+        font-size: 15px;
+      }
+
+      .browser-card__body {
+        display: grid;
+        place-items: center;
+        height: 260px;
+        background:
+          radial-gradient(circle at 50% 15%, rgb(61 128 245 / 20%), transparent 48%), #101620;
+        text-align: center;
+      }
+
+      .browser-card__body strong {
+        display: block;
+        font-size: 25px;
+      }
+
+      .browser-card__body span {
+        display: block;
+        margin-top: 9px;
+        color: #8fe4b6;
+        font-size: 17px;
+        font-weight: 700;
+      }
+
+      .key-grid {
+        position: absolute;
+        right: 100px;
+        bottom: 14px;
+        display: grid;
+        grid-template-columns: repeat(2, 184px);
+        gap: 24px;
+        padding: 0;
+        transform: rotate(-3deg);
+      }
+
+      .key-grid::before {
+        position: absolute;
+        top: -35px;
+        left: 2px;
+        color: #718095;
+        content: "Live key states";
+        font-size: 14px;
+        font-weight: 800;
+        letter-spacing: 0.13em;
+        text-transform: uppercase;
+      }
+
+      .deck-key {
+        position: relative;
+        display: grid;
+        width: 184px;
+        height: 184px;
+        place-items: center;
+        border: 3px solid #39465a;
+        border-radius: 34px;
+        background: #080b10;
+        box-shadow:
+          inset 0 0 0 5px #05070a,
+          0 12px 26px rgb(0 0 0 / 40%);
+      }
+
+      .deck-key img {
+        width: 144px;
+        height: 144px;
+        border-radius: 28px;
+      }
+
+      .state-pulse {
+        position: absolute;
+        top: 356px;
+        right: 594px;
+        width: 20px;
+        height: 20px;
+        border: 5px solid #53da91;
+        border-radius: 50%;
+        box-shadow: 0 0 0 12px rgb(83 218 145 / 10%);
+      }
+
+      .state-line {
+        position: absolute;
+        top: 365px;
+        right: 428px;
+        width: 158px;
+        border-top: 2px dashed rgb(105 183 244 / 72%);
+        transform: rotate(34deg);
+        transform-origin: left;
+      }
+
+      .thumbnail-footer {
+        position: absolute;
+        bottom: 74px;
+        left: 104px;
+        z-index: 2;
+        color: #718095;
+        font-size: 17px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      .gallery-shell {
+        padding: 66px 80px;
+      }
+
+      .gallery-heading {
+        position: relative;
+        z-index: 2;
+        max-width: 1180px;
+      }
+
+      .gallery-heading h1 {
+        margin-top: 20px;
+        font-size: 68px;
+        line-height: 1.02;
+        letter-spacing: -0.045em;
+      }
+
+      .gallery-heading p {
+        max-width: 1060px;
+        margin-top: 15px;
+        color: #aeb9c7;
+        font-size: 25px;
+        line-height: 1.42;
+      }
+
+      .controls-grid {
+        position: relative;
+        z-index: 2;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 22px;
+        margin-top: 50px;
+      }
+
+      .control-card {
+        min-height: 504px;
+        padding: 24px;
+        border: 1px solid #2b394d;
+        border-radius: 26px;
+        background: linear-gradient(155deg, rgb(25 33 45 / 96%), rgb(14 19 27 / 96%));
+        box-shadow: 0 26px 54px rgb(0 0 0 / 24%);
+      }
+
+      .control-card__label {
+        color: #718095;
+        font-size: 16px;
+        font-weight: 800;
+        letter-spacing: 0.13em;
+        text-transform: uppercase;
+      }
+
+      .control-card h2 {
+        margin-top: 7px;
+        font-size: 29px;
+      }
+
+      .state-pair {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        margin-top: 30px;
+      }
+
+      .state-key {
+        display: grid;
+        width: 162px;
+        height: 162px;
+        place-items: center;
+        border: 2px solid #344258;
+        border-radius: 28px;
+        background: #080b10;
+        box-shadow: inset 0 0 0 4px #05070a;
+      }
+
+      .state-key img {
+        width: 132px;
+        height: 132px;
+        border-radius: 26px;
+      }
+
+      .state-arrow {
+        color: #64748a;
+        font-size: 26px;
+        font-weight: 800;
+      }
+
+      .state-labels {
+        display: flex;
+        justify-content: space-around;
+        margin-top: 14px;
+        color: #8d9aac;
+        font-size: 15px;
+        font-weight: 700;
+      }
+
+      .confirmed-badge {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        margin-top: 29px;
+        padding-top: 21px;
+        border-top: 1px solid #283548;
+        color: #91e8ba;
+        font-size: 16px;
+        font-weight: 700;
+      }
+
+      .confirmed-badge::before {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #47d98b;
+        box-shadow: 0 0 0 5px rgb(71 217 139 / 10%);
+        content: "";
+      }
+
+      .pairing-flow {
+        position: relative;
+        z-index: 2;
+        display: grid;
+        grid-template-columns: 1fr 1.2fr 1fr;
+        gap: 78px;
+        align-items: center;
+        margin-top: 52px;
+      }
+
+      .pair-step {
+        position: relative;
+        min-height: 500px;
+        padding: 27px;
+        border: 1px solid #2d3b50;
+        border-radius: 28px;
+        background: rgb(18 25 35 / 94%);
+        box-shadow: 0 28px 64px rgb(0 0 0 / 25%);
+      }
+
+      .pair-step:not(:last-child)::after {
+        position: absolute;
+        top: 244px;
+        right: -58px;
+        width: 38px;
+        height: 38px;
+        border-top: 3px solid #50627a;
+        border-right: 3px solid #50627a;
+        content: "";
+        transform: rotate(45deg);
+      }
+
+      .step-kicker {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: #7d8ca0;
+        font-size: 16px;
+        font-weight: 800;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+      }
+
+      .step-number {
+        display: grid;
+        width: 38px;
+        height: 38px;
+        place-items: center;
+        border: 1px solid #4d8dff;
+        border-radius: 12px;
+        background: rgb(57 119 232 / 18%);
+        color: #86b2ff;
+        font-size: 18px;
+        letter-spacing: normal;
+      }
+
+      .pair-step h2 {
+        margin-top: 20px;
+        font-size: 29px;
+      }
+
+      .pair-step p {
+        margin-top: 11px;
+        color: #95a2b3;
+        font-size: 18px;
+        line-height: 1.45;
+      }
+
+      .single-key {
+        display: grid;
+        width: 202px;
+        height: 202px;
+        margin: 42px auto 0;
+        place-items: center;
+        border: 3px solid #3c4b62;
+        border-radius: 38px;
+        background: #070a0f;
+        box-shadow:
+          inset 0 0 0 6px #040609,
+          0 20px 38px rgb(0 0 0 / 38%);
+      }
+
+      .single-key img {
+        width: 158px;
+        height: 158px;
+        border-radius: 31px;
+      }
+
+      .pi-window {
+        margin-top: 30px;
+        overflow: hidden;
+        border: 1px solid #3a3d42;
+        border-radius: 10px;
+        background: #202225;
+        color: #f4f6f8;
+      }
+
+      .pi-titlebar {
+        padding: 11px 14px;
+        border-bottom: 1px solid #373b42;
+        background: #292c30;
+        color: #9da3ab;
+        font-size: 16px;
+        font-weight: 700;
+      }
+
+      .pi-body {
+        padding: 15px;
+      }
+
+      .pi-status {
+        display: flex;
+        align-items: flex-start;
+        gap: 11px;
+        padding: 13px;
+        border: 1px solid #3a3d42;
+        border-radius: 7px;
+        background: #292c30;
+      }
+
+      .pi-status-dot {
+        width: 10px;
+        height: 10px;
+        margin-top: 4px;
+        border-radius: 50%;
+        background: #e7b64a;
+      }
+
+      .pi-status strong {
+        display: block;
+        font-size: 16px;
+      }
+
+      .pi-status span {
+        display: block;
+        margin-top: 3px;
+        color: #b9bdc3;
+        font-size: 15px;
+      }
+
+      .pi-section-label {
+        margin-top: 15px;
+        color: #d6d9dd;
+        font-size: 14px;
+        font-weight: 800;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+      }
+
+      .pair-code {
+        margin-top: 9px;
+        padding: 13px;
+        border: 1px solid #5b5136;
+        border-radius: 7px;
+        background: #353021;
+        color: #ffe29b;
+        font-family: "Courier New", monospace;
+        font-size: 24px;
+        font-weight: 800;
+        letter-spacing: 0.16em;
+        text-align: center;
+      }
+
+      .pi-footnote {
+        margin-top: 9px;
+        color: #9da3ab;
+        font-size: 14px;
+        text-align: center;
+      }
+
+      .companion-card {
+        display: grid;
+        margin-top: 38px;
+        place-items: center;
+        text-align: center;
+      }
+
+      .md-mark {
+        display: grid;
+        width: 114px;
+        height: 114px;
+        place-items: center;
+        border: 1px solid #4d8dff;
+        border-radius: 30px;
+        background: linear-gradient(145deg, #3977e8, #824ee8);
+        box-shadow: 0 20px 50px rgb(61 128 245 / 25%);
+        color: white;
+        font-size: 34px;
+        font-weight: 900;
+        letter-spacing: 0.05em;
+      }
+
+      .code-dots {
+        display: flex;
+        gap: 8px;
+        margin-top: 36px;
+      }
+
+      .code-dots span {
+        width: 15px;
+        height: 15px;
+        border-radius: 4px;
+        background: #4d8dff;
+        box-shadow: 0 0 0 4px rgb(77 141 255 / 11%);
+      }
+
+      .local-route {
+        margin-top: 30px;
+        padding: 11px 16px;
+        border: 1px solid rgb(71 217 139 / 28%);
+        border-radius: 999px;
+        background: rgb(71 217 139 / 8%);
+        color: #8eeab8;
+        font-family: "Courier New", monospace;
+        font-size: 16px;
+        font-weight: 700;
+      }
+
+      .privacy-layout {
+        position: relative;
+        z-index: 2;
+        display: grid;
+        grid-template-columns: 0.95fr 1.1fr 0.95fr;
+        gap: 38px;
+        align-items: center;
+        margin-top: 58px;
+      }
+
+      .privacy-node {
+        min-height: 420px;
+        padding: 30px;
+        border: 1px solid #2b394d;
+        border-radius: 28px;
+        background: rgb(17 24 34 / 95%);
+        box-shadow: 0 30px 68px rgb(0 0 0 / 27%);
+      }
+
+      .privacy-node__icon {
+        display: grid;
+        width: 72px;
+        height: 72px;
+        place-items: center;
+        border: 1px solid #3b4b61;
+        border-radius: 20px;
+        background: #111a27;
+        color: #8bb5ff;
+        font-size: 28px;
+        font-weight: 900;
+      }
+
+      .privacy-node h2 {
+        margin-top: 24px;
+        font-size: 31px;
+      }
+
+      .privacy-node p {
+        margin-top: 12px;
+        color: #96a3b4;
+        font-size: 19px;
+        line-height: 1.48;
+      }
+
+      .privacy-node__meta {
+        margin-top: 34px;
+        padding-top: 20px;
+        border-top: 1px solid #293649;
+        color: #728198;
+        font-family: "Courier New", monospace;
+        font-size: 15px;
+      }
+
+      .bridge-card {
+        padding: 28px;
+        border: 1px solid rgb(71 217 139 / 28%);
+        border-radius: 28px;
+        background:
+          radial-gradient(circle at 50% 0, rgb(71 217 139 / 12%), transparent 55%),
+          rgb(14 22 29 / 96%);
+        text-align: center;
+      }
+
+      .bridge-card__route {
+        color: #83e7b1;
+        font-family: "Courier New", monospace;
+        font-size: 27px;
+        font-weight: 800;
+      }
+
+      .bridge-card__title {
+        margin-top: 12px;
+        font-size: 23px;
+        font-weight: 800;
+      }
+
+      .bridge-card__subtitle {
+        margin-top: 8px;
+        color: #7f8da0;
+        font-size: 15px;
+      }
+
+      .state-chips {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin-top: 24px;
+      }
+
+      .state-chip {
+        padding: 12px 10px;
+        border: 1px solid #2f4d3d;
+        border-radius: 10px;
+        background: rgb(71 217 139 / 6%);
+        color: #a5d9bb;
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .never-list {
+        display: grid;
+        gap: 12px;
+        margin-top: 28px;
+      }
+
+      .never-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: #c7d0dc;
+        font-size: 17px;
+        font-weight: 700;
+      }
+
+      .never-item::before {
+        display: grid;
+        width: 24px;
+        height: 24px;
+        flex: none;
+        place-items: center;
+        border: 1px solid #5e3d49;
+        border-radius: 50%;
+        background: rgb(126 47 61 / 13%);
+        color: #ff9ba9;
+        content: "×";
+        font-size: 17px;
+      }
+
+      .privacy-footer {
+        position: absolute;
+        right: 80px;
+        bottom: 54px;
+        left: 80px;
+        z-index: 2;
+        display: flex;
+        justify-content: space-between;
+        color: #68778d;
+        font-size: 15px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="artboard asset-app-icon" aria-label="Meet Deck Marketplace app icon">
+      <div class="listing-icon">
+        <span class="listing-icon__camera"></span>
+        <span class="listing-icon__lens"></span>
+      </div>
+    </main>
+
+    <main class="artboard asset-thumbnail marketplace-background">
+      <div
+        class="orb"
+        style="
+          top: 34px;
+          right: 330px;
+          width: 430px;
+          height: 430px;
+          background: rgb(57 119 232 / 9%);
+        "
+      ></div>
+      <section class="thumbnail-copy">
+        <span class="eyebrow">Stream Deck plugin</span>
+        <h1>Meet Deck</h1>
+        <p class="tagline">Google Meet controls on your Stream Deck.</p>
+        <div class="qualifiers">
+          <span class="qualifier qualifier--local">Local pairing</span>
+          <span class="qualifier">macOS</span>
+          <span class="qualifier">Chrome companion required</span>
+        </div>
+      </section>
+      <section
+        class="thumbnail-stage"
+        aria-label="Confirmed Google Meet state flowing to four Stream Deck keys"
+      >
+        <div class="browser-card">
+          <div class="browser-card__bar">
+            <span class="browser-card__dot"></span>
+            <span class="browser-card__dot"></span>
+            <span class="browser-card__dot"></span>
+            <span class="browser-card__address">meet.google.com</span>
+          </div>
+          <div class="browser-card__body">
+            <div><strong>Google Meet</strong><span>Joined meeting · state confirmed</span></div>
+          </div>
+        </div>
+        <span class="state-pulse"></span>
+        <span class="state-line"></span>
+        <div class="key-grid">
+          <span class="deck-key"
+            ><img
+              src="/apps/streamdeck-plugin/dev.annonator.meet-deck.sdPlugin/imgs/actions/microphone/on@2x.png"
+              alt="Microphone on key"
+          /></span>
+          <span class="deck-key"
+            ><img
+              src="/apps/streamdeck-plugin/dev.annonator.meet-deck.sdPlugin/imgs/actions/camera/on@2x.png"
+              alt="Camera on key"
+          /></span>
+          <span class="deck-key"
+            ><img
+              src="/apps/streamdeck-plugin/dev.annonator.meet-deck.sdPlugin/imgs/actions/hand/on@2x.png"
+              alt="Hand raised key"
+          /></span>
+          <span class="deck-key"
+            ><img
+              src="/apps/streamdeck-plugin/dev.annonator.meet-deck.sdPlugin/imgs/actions/presentation/on@2x.png"
+              alt="Presentation active key"
+          /></span>
+        </div>
+      </section>
+      <p class="thumbnail-footer">Microphone · Camera · Hand · Presentation</p>
+    </main>
+
+    <main class="artboard asset-gallery-01-controls marketplace-background gallery-shell">
+      <header class="gallery-heading">
+        <span class="eyebrow">Live key feedback</span>
+        <h1>Four controls. Confirmed state.</h1>
+        <p>
+          Keys follow the supported state reported by Google Meet instead of guessing the result of
+          a press.
+        </p>
+      </header>
+      <section class="controls-grid">
+        <article class="control-card">
+          <span class="control-card__label">Control 01</span>
+          <h2>Microphone</h2>
+          <div class="state-pair">
+            <span class="state-key"
+              ><img
+                src="/apps/streamdeck-plugin/dev.annonator.meet-deck.sdPlugin/imgs/actions/microphone/off@2x.png"
+                alt="Muted"
+            /></span>
+            <span class="state-arrow">→</span>
+            <span class="state-key"
+              ><img
+                src="/apps/streamdeck-plugin/dev.annonator.meet-deck.sdPlugin/imgs/actions/microphone/on@2x.png"
+                alt="Microphone on"
+            /></span>
+          </div>
+          <div class="state-labels"><span>Muted</span><span>Mic on</span></div>
+          <div class="confirmed-badge">Confirmed meeting state</div>
+        </article>
+        <article class="control-card">
+          <span class="control-card__label">Control 02</span>
+          <h2>Camera</h2>
+          <div class="state-pair">
+            <span class="state-key"
+              ><img
+                src="/apps/streamdeck-plugin/dev.annonator.meet-deck.sdPlugin/imgs/actions/camera/off@2x.png"
+                alt="Camera off"
+            /></span>
+            <span class="state-arrow">→</span>
+            <span class="state-key"
+              ><img
+                src="/apps/streamdeck-plugin/dev.annonator.meet-deck.sdPlugin/imgs/actions/camera/on@2x.png"
+                alt="Camera on"
+            /></span>
+          </div>
+          <div class="state-labels"><span>Cam off</span><span>Cam on</span></div>
+          <div class="confirmed-badge">Confirmed meeting state</div>
+        </article>
+        <article class="control-card">
+          <span class="control-card__label">Control 03</span>
+          <h2>Hand</h2>
+          <div class="state-pair">
+            <span class="state-key"
+              ><img
+                src="/apps/streamdeck-plugin/dev.annonator.meet-deck.sdPlugin/imgs/actions/hand/off@2x.png"
+                alt="Hand lowered"
+            /></span>
+            <span class="state-arrow">→</span>
+            <span class="state-key"
+              ><img
+                src="/apps/streamdeck-plugin/dev.annonator.meet-deck.sdPlugin/imgs/actions/hand/on@2x.png"
+                alt="Hand raised"
+            /></span>
+          </div>
+          <div class="state-labels"><span>Hand down</span><span>Hand up</span></div>
+          <div class="confirmed-badge">Confirmed meeting state</div>
+        </article>
+        <article class="control-card">
+          <span class="control-card__label">Control 04</span>
+          <h2>Presentation</h2>
+          <div class="state-pair">
+            <span class="state-key"
+              ><img
+                src="/apps/streamdeck-plugin/dev.annonator.meet-deck.sdPlugin/imgs/actions/presentation/off@2x.png"
+                alt="Not presenting"
+            /></span>
+            <span class="state-arrow">→</span>
+            <span class="state-key"
+              ><img
+                src="/apps/streamdeck-plugin/dev.annonator.meet-deck.sdPlugin/imgs/actions/presentation/on@2x.png"
+                alt="Presenting"
+            /></span>
+          </div>
+          <div class="state-labels"><span>Share</span><span>Sharing</span></div>
+          <div class="confirmed-badge">You choose every source</div>
+        </article>
+      </section>
+    </main>
+
+    <main class="artboard asset-gallery-02-pairing marketplace-background gallery-shell">
+      <header class="gallery-heading">
+        <span class="eyebrow">Companion connection</span>
+        <h1>One-time pairing. Local connection.</h1>
+        <p>A short-lived code pairs the plugin with the required Chrome companion on this Mac.</p>
+      </header>
+      <section class="pairing-flow">
+        <article class="pair-step">
+          <span class="step-kicker"><span class="step-number">1</span>Add an action</span>
+          <h2>Select a Meet Deck key</h2>
+          <p>Open its property inspector in the Stream Deck App.</p>
+          <span class="single-key"
+            ><img
+              src="/apps/streamdeck-plugin/dev.annonator.meet-deck.sdPlugin/imgs/actions/microphone/off@2x.png"
+              alt="Meet Deck microphone key"
+          /></span>
+        </article>
+        <article class="pair-step">
+          <span class="step-kicker"><span class="step-number">2</span>Start pairing</span>
+          <h2>Use the short-lived code</h2>
+          <div
+            class="pi-window"
+            aria-label="Illustration based on the real English property inspector"
+          >
+            <div class="pi-titlebar">Meet Deck · Property Inspector</div>
+            <div class="pi-body">
+              <div class="pi-status">
+                <span class="pi-status-dot"></span>
+                <div>
+                  <strong>Pairing open</strong
+                  ><span>Enter the one-time code in the Chrome extension.</span>
+                </div>
+              </div>
+              <div class="pi-section-label">Chrome extension</div>
+              <div class="pair-code">48271953</div>
+              <div class="pi-footnote">Illustrative code · expires after two minutes</div>
+            </div>
+          </div>
+        </article>
+        <article class="pair-step">
+          <span class="step-kicker"><span class="step-number">3</span>Connect Chrome</span>
+          <h2>Enter the same code</h2>
+          <p>The companion extension completes authenticated pairing without a cloud relay.</p>
+          <div
+            class="companion-card"
+            aria-label="Conceptual companion extension graphic, not a screenshot"
+          >
+            <span class="md-mark">MD</span>
+            <span class="code-dots"
+              ><span></span><span></span><span></span><span></span><span></span><span></span
+              ><span></span><span></span
+            ></span>
+            <span class="local-route">127.0.0.1</span>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <main class="artboard asset-gallery-03-privacy marketplace-background gallery-shell">
+      <header class="gallery-heading">
+        <span class="eyebrow">Privacy by design</span>
+        <h1>Your meeting stays in the browser.</h1>
+        <p>
+          Meet Deck sends finite control state and commands across an authenticated loopback bridge.
+        </p>
+      </header>
+      <section class="privacy-layout">
+        <article class="privacy-node">
+          <span class="privacy-node__icon">G</span>
+          <h2>Google Meet in Chrome</h2>
+          <p>The companion observes supported controls in one joined meeting.</p>
+          <div class="privacy-node__meta">https://meet.google.com/*</div>
+        </article>
+        <article class="bridge-card">
+          <div class="bridge-card__route">127.0.0.1</div>
+          <div class="bridge-card__title">Authenticated local bridge</div>
+          <div class="bridge-card__subtitle">No Meet Deck backend or cloud relay</div>
+          <div class="state-chips">
+            <span class="state-chip">Mic on / off</span>
+            <span class="state-chip">Camera on / off</span>
+            <span class="state-chip">Hand up / down</span>
+            <span class="state-chip">Presenting / not</span>
+          </div>
+        </article>
+        <article class="privacy-node">
+          <span class="privacy-node__icon">MD</span>
+          <h2>Meet Deck plugin</h2>
+          <p>Keys show confirmed state and send only supported commands.</p>
+          <div class="never-list">
+            <span class="never-item">No audio or video</span>
+            <span class="never-item">No meeting links or names</span>
+            <span class="never-item">No chat or captions</span>
+            <span class="never-item">No analytics or advertising</span>
+          </div>
+        </article>
+      </section>
+      <footer class="privacy-footer">
+        <span>Open source · MIT License</span><span>Required Chrome companion · macOS</span>
+      </footer>
+    </main>
+
+    <script>
+      const asset = new URLSearchParams(window.location.search).get("asset");
+      const knownAssets = new Set([
+        "app-icon",
+        "thumbnail",
+        "gallery-01-controls",
+        "gallery-02-pairing",
+        "gallery-03-privacy"
+      ]);
+
+      if (!knownAssets.has(asset)) {
+        throw new Error(`Unknown or missing Marketplace artboard: ${asset}`);
+      }
+
+      document.body.dataset.asset = asset;
+    </script>
+  </body>
+</html>

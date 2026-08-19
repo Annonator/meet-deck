@@ -42,6 +42,9 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Validate Marketplace listing assets
+        run: npm run validate:listing-assets
+
       - name: Type-check
         run: npm run typecheck
 

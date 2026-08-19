@@ -21,6 +21,8 @@
     "clean": "npm run clean --workspaces --if-present",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "render:listing-assets": "node scripts/render-listing-assets.mjs",
+    "validate:listing-assets": "node scripts/validate-listing-assets.mjs",
     "lint": "eslint .",
     "test": "npm run build:protocol && npm run test --workspaces --if-present",
     "test:coverage": "npm run build:protocol && npm run test:coverage --workspaces --if-present",
@@ -30,7 +32,7 @@
     "store:validate": "npm run store:validate --workspace @meet-deck/chrome-extension",
     "pack": "node scripts/clean-artifacts.mjs && npm run build && npm run validate && npm run package --workspace @meet-deck/chrome-extension && npm run pack --workspace @meet-deck/streamdeck-plugin && node scripts/create-checksums.mjs",
     "release:verify": "node scripts/verify-release.mjs",
-    "check": "npm run format:check && npm run lint && npm run release:verify && npm run typecheck && npm run test && npm run build && npm run store:validate && npm run validate"
+    "check": "npm run format:check && npm run lint && npm run release:verify && npm run validate:listing-assets && npm run typecheck && npm run test && npm run build && npm run store:validate && npm run validate"
   },
   "devDependencies": {
     "@elgato/cli": "1.8.1",
