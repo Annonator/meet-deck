@@ -135,6 +135,14 @@ code {
   color: #d7e9f8;
 }
 
+a {
+  color: #69b7f4;
+}
+
+a:hover {
+  color: #9dd2fb;
+}
+
 .pairing-code-wrap {
   display: grid;
   gap: 4px;

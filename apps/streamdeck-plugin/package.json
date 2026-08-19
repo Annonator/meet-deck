@@ -8,11 +8,12 @@
   },
   "scripts": {
     "build": "rollup -c --forceExit",
+    "icons:generate": "node ./scripts/generate-action-list-icons.mjs",
     "watch": "rollup -c -w --watch.onEnd=\"streamdeck restart dev.annonator.meet-deck\"",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "validate": "streamdeck validate dev.annonator.meet-deck.sdPlugin --no-update-check",
+    "validate": "node ./scripts/validate-bundle.mjs && streamdeck validate dev.annonator.meet-deck.sdPlugin --no-update-check",
     "pack": "node ./scripts/pack.mjs"
   },
   "dependencies": {

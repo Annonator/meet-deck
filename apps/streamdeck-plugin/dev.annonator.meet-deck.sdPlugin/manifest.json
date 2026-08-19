@@ -5,6 +5,8 @@
   "Author": "annonator",
   "UUID": "dev.annonator.meet-deck",
   "Description": "Privacy-first controls for Google Meet through a local, paired browser extension.",
+  "URL": "https://github.com/Annonator/meet-deck",
+  "SupportURL": "https://github.com/Annonator/meet-deck/issues",
   "Category": "Meet Deck",
   "CategoryIcon": "imgs/plugin/category-icon",
   "Icon": "imgs/plugin/marketplace",
@@ -20,7 +22,7 @@
   "OS": [
     {
       "Platform": "mac",
-      "MinimumVersion": "12"
+      "MinimumVersion": "13"
     }
   ],
   "Actions": [
