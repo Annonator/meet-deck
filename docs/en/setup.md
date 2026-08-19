@@ -2,7 +2,7 @@
 
 ## Requirements
 
-- macOS 12 or newer
+- macOS 13 or newer
 - Elgato Stream Deck desktop app 7.1 or newer
 - Google Chrome 147 or newer
 - A Stream Deck with LCD keys (Stream Deck + is supported through its keys)
