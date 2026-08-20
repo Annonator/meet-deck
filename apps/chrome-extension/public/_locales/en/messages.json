@@ -28,12 +28,12 @@
     "description": "Initial popup status while the background worker responds."
   },
   "popup_pairing_code_label": {
-    "message": "Pairing code from Stream Deck",
-    "description": "Label for the eight-digit pairing code field."
+    "message": "Pairing key from Stream Deck",
+    "description": "Label for the 25-character one-time pairing key field."
   },
   "popup_pairing_help": {
     "message": "Pairing requests Chrome's optional host access only for the configured WebSocket origin on 127.0.0.1. No LAN or all-URL access is requested.",
-    "description": "Explanation immediately below the pairing code field."
+    "description": "Explanation immediately below the pairing key field."
   },
   "popup_pair_button_default": {
     "message": "Pair and connect",
@@ -76,8 +76,8 @@
     "description": "Shown when the popup cannot reach its service worker."
   },
   "error_invalid_pairing_code": {
-    "message": "Enter the eight-digit code from the Stream Deck Property Inspector.",
-    "description": "Shown when the pairing-code input is malformed."
+    "message": "Enter the 25-character key from the Stream Deck Property Inspector.",
+    "description": "Shown when the pairing-key input is malformed."
   },
   "error_invalid_bridge_port": {
     "message": "Enter a local bridge port from 1024 through 65535.",
@@ -148,8 +148,8 @@
     "description": "Detailed bridge problem shown when the local plugin is unavailable."
   },
   "problem_invalid_pairing_code": {
-    "message": "The pairing code is invalid.",
-    "description": "Detailed bridge problem for an invalid code."
+    "message": "The pairing key is invalid or the local peer is not the Meet Deck plugin.",
+    "description": "Detailed bridge problem for an invalid key or unauthenticated first peer."
   },
   "problem_loopback_permission_denied": {
     "message": "Chrome denied Meet Deck access to the configured loopback address. Choose Pair or Connect to request it again.",
@@ -160,8 +160,8 @@
     "description": "Detailed bridge problem when the optional loopback host permission is missing."
   },
   "problem_pairing_expired": {
-    "message": "The pairing code has expired. Generate a new one in the Property Inspector.",
-    "description": "Detailed bridge problem for an expired pairing code."
+    "message": "The pairing key has expired. Generate a new one in the Property Inspector.",
+    "description": "Detailed bridge problem for an expired pairing key."
   },
   "problem_protocol_error": {
     "message": "The bridge sent unexpected data. The connection was closed as a precaution.",
@@ -176,7 +176,7 @@
     "description": "Shown when trusted-context-only extension storage cannot be enabled."
   },
   "error_not_paired": {
-    "message": "Meet Deck is not paired yet. Open pairing in Stream Deck and enter the displayed code.",
+    "message": "Meet Deck is not paired yet. Open pairing in Stream Deck and enter the displayed key.",
     "description": "Shown when reconnect is requested without a stored pairing credential."
   },
   "onboarding_title": {
@@ -208,7 +208,7 @@
     "description": "Second onboarding step heading."
   },
   "onboarding_step_pair_body": {
-    "message": "Generate an eight-digit code in the Property Inspector. It expires quickly and works only on this computer.",
+    "message": "Generate a 25-character key in the Property Inspector. It expires quickly and works only on this computer.",
     "description": "Second onboarding step instructions."
   },
   "onboarding_step_connect_heading": {
@@ -216,7 +216,7 @@
     "description": "Third onboarding step heading."
   },
   "onboarding_step_connect_body": {
-    "message": "Open the Meet Deck popup, enter the code, and choose Pair and connect. Chrome may ask you to allow Meet Deck to reach only the configured WebSocket origin on 127.0.0.1.",
+    "message": "Open the Meet Deck popup, enter the key, and choose Pair and connect. Chrome may ask you to allow Meet Deck to reach only the configured WebSocket origin on 127.0.0.1.",
     "description": "Third onboarding step instructions describing the host-permission flow."
   },
   "onboarding_privacy_heading": {

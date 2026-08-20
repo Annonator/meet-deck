@@ -16,17 +16,17 @@ are sent to the paired local Stream Deck plugin.
 
 ## Data handled
 
-| Data                                                                             | Purpose                                                          | Destination                                        | Retention                                                                                               |
-| -------------------------------------------------------------------------------- | ---------------------------------------------------------------- | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| Visible Meet button accessibility labels and control-state attributes            | Recognise supported controls and whether the document joined     | Chrome extension only                              | Transient; not copied to settings, logs, or the local wire                                              |
-| Chrome-supplied sender URL/origin and opaque tab/window/document IDs             | Validate an active top-level Meet sender and target one document | Chrome extension only                              | Connection memory; URL/path is not copied to product state                                              |
-| `meetingMultiplicity` plus finite microphone/camera/hand/self-presentation state | Render keys and avoid the wrong meeting                          | Paired plugin on `127.0.0.1`                       | Memory only                                                                                             |
-| Bounded command-result status and random command ID                              | Confirm and correlate a requested control action                 | Browser and paired plugin                          | Memory only                                                                                             |
-| Random opaque transport session IDs                                              | Secure and order local messages                                  | Browser and paired plugin                          | Memory only                                                                                             |
-| Eight-digit pairing code                                                         | User-authorised initial pairing                                  | Loopback connection                                | At most two minutes                                                                                     |
-| Random 256-bit Meet Deck pairing credential                                      | Authenticate later local connections                             | Chrome extension storage and local plugin settings | On each side until that side forgets/unpairs, its storage is cleared, or its software is removed        |
-| Configured loopback port                                                         | Find the selected local plugin origin                            | Chrome extension storage                           | Until changed, extension storage is cleared, or the extension is removed; **Forget pairing** retains it |
-| Exact-port Chrome host grant                                                     | Permit only the selected local plugin origin                     | Chrome permission store                            | Until port-change cleanup, **Forget pairing**, user revocation, or extension removal                    |
+| Data                                                                             | Purpose                                                          | Destination                                         | Retention                                                                                               |
+| -------------------------------------------------------------------------------- | ---------------------------------------------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| Visible Meet button accessibility labels and control-state attributes            | Recognise supported controls and whether the document joined     | Chrome extension only                               | Transient; not copied to settings, logs, or the local wire                                              |
+| Chrome-supplied sender URL/origin and opaque tab/window/document IDs             | Validate an active top-level Meet sender and target one document | Chrome extension only                               | Connection memory; URL/path is not copied to product state                                              |
+| `meetingMultiplicity` plus finite microphone/camera/hand/self-presentation state | Render keys and avoid the wrong meeting                          | Paired plugin on `127.0.0.1`                        | Memory only                                                                                             |
+| Bounded command-result status and random command ID                              | Confirm and correlate a requested control action                 | Browser and paired plugin                           | Memory only                                                                                             |
+| Random opaque transport session IDs                                              | Secure and order local messages                                  | Browser and paired plugin                           | Memory only                                                                                             |
+| Random 125-bit one-time pairing key                                              | User-authorised initial pairing and first-peer authentication    | Plugin and extension memory; never sent on loopback | Plugin window: at most two minutes; extension: only during the foreground attempt                       |
+| Random 256-bit Meet Deck pairing credential                                      | Authenticate later local connections                             | Chrome extension storage and local plugin settings  | On each side until that side forgets/unpairs, its storage is cleared, or its software is removed        |
+| Configured loopback port                                                         | Find the selected local plugin origin                            | Chrome extension storage                            | Until changed, extension storage is cleared, or the extension is removed; **Forget pairing** retains it |
+| Exact-port Chrome host grant                                                     | Permit only the selected local plugin origin                     | Chrome permission store                             | Until port-change cleanup, **Forget pairing**, user revocation, or extension removal                    |
 
 The content script transiently compares visible button accessibility labels with a fixed English/
 German allowlist and reads only the state attributes needed to derive finite control values. Chrome
@@ -56,9 +56,10 @@ plugin:
 - IP-based analytics, crash telemetry, usage metrics, or advertising IDs.
 
 The locally stored Meet Deck pairing credential is distinct from Google/account authentication. The
-Stream Deck plugin generates this random 256-bit value only after the one-time pairing code is
-accepted. It is stored only in `chrome.storage.local` and Stream Deck global settings, used solely
-for mutual authentication of the loopback bridge, and never sent to Google or a remote service.
+Stream Deck plugin generates this random 256-bit value only after both sides prove possession of the
+one-time pairing key without sending that key over the socket. It is stored only in
+`chrome.storage.local` and Stream Deck global settings, used solely for mutual authentication of the
+loopback bridge, and never sent to Google or a remote service.
 
 ## Browser access
 

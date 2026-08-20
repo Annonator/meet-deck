@@ -26,6 +26,7 @@ export const RESULT_STATUSES = [
 
 export const MEETING_MULTIPLICITIES = ["none", "one", "multiple"] as const;
 export const TRANSPORT_DIRECTIONS = ["extension_to_plugin", "plugin_to_extension"] as const;
+export const PAIRING_KEY_LENGTH = 25;
 
 export const PAIR_REJECTION_REASONS = [
   "invalid_code",
@@ -98,9 +99,31 @@ export interface PongMessage extends MessageBase<"pong"> {
 export type ApplicationMessage =
   CommandMessage | MeetingStateMessage | ResultMessage | PingMessage | PongMessage;
 
-export interface PairRequestMessage extends MessageBase<"pair.request"> {
-  /** Exactly eight ASCII decimal digits, including possible leading zeroes. */
-  readonly code: string;
+export interface PairingBinding {
+  /** Fresh 256-bit nonce chosen by the extension. */
+  readonly clientNonce: string;
+  /** Fresh 256-bit nonce chosen by the plugin. */
+  readonly serverNonce: string;
+  /** The exact Chrome extension origin being enrolled. */
+  readonly origin: string;
+  readonly clientRole: "extension";
+  readonly serverRole: "plugin";
+}
+
+export interface PairHelloMessage extends MessageBase<"pair.hello"> {
+  readonly clientNonce: string;
+  readonly origin: string;
+  readonly role: "extension";
+}
+
+export interface PairChallengeMessage extends MessageBase<"pair.challenge">, PairingBinding {
+  /** Plugin proof keyed by the out-of-band pairing key. */
+  readonly serverHmac: string;
+}
+
+export interface PairResponseMessage extends MessageBase<"pair.response">, PairingBinding {
+  /** Extension proof keyed by the same out-of-band pairing key. */
+  readonly clientHmac: string;
 }
 
 export interface PairGrantedMessage extends MessageBase<"pair.granted"> {
@@ -112,7 +135,12 @@ export interface PairRejectedMessage extends MessageBase<"pair.rejected"> {
   readonly reason: PairRejectionReason;
 }
 
-export type PairingMessage = PairRequestMessage | PairGrantedMessage | PairRejectedMessage;
+export type PairingMessage =
+  | PairHelloMessage
+  | PairChallengeMessage
+  | PairResponseMessage
+  | PairGrantedMessage
+  | PairRejectedMessage;
 
 /**
  * Values cryptographically bound into both authentication proofs and both
@@ -199,7 +227,7 @@ const utf8Encoder = new TextEncoder();
 const utf8Decoder = new TextDecoder("utf-8", { fatal: true });
 const wireIdentifierPattern = /^[A-Za-z0-9._:-]+$/;
 const base64UrlPattern = /^[A-Za-z0-9_-]+$/;
-const pairingCodePattern = /^\d{8}$/;
+const pairingKeyPattern = /^[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{25}$/;
 const chromeExtensionOriginPattern = /^chrome-extension:\/\/[a-p]{32}$/;
 
 function isRecord(value: unknown): value is UnknownRecord {
@@ -274,6 +302,16 @@ function hasValidAuthBindingFields(value: UnknownRecord): boolean {
   );
 }
 
+function hasValidPairingBindingFields(value: UnknownRecord): boolean {
+  return (
+    isBase64Url256(value.clientNonce) &&
+    isBase64Url256(value.serverNonce) &&
+    isChromeExtensionOrigin(value.origin) &&
+    value.clientRole === "extension" &&
+    value.serverRole === "plugin"
+  );
+}
+
 function directionAllowsMessage(
   direction: TransportDirection,
   message: ApplicationMessage
@@ -288,7 +326,7 @@ function directionAllowsMessage(
 }
 
 export function isPairingCode(value: unknown): value is string {
-  return typeof value === "string" && pairingCodePattern.test(value);
+  return typeof value === "string" && pairingKeyPattern.test(value);
 }
 
 export function isCommandMessage(value: unknown): value is CommandMessage {
@@ -388,11 +426,45 @@ export function isPairingMessage(value: unknown): value is PairingMessage {
   }
 
   switch (value.type) {
-    case "pair.request":
+    case "pair.hello":
       return (
-        hasExactKeys(value, ["v", "type", "code"]) &&
-        hasValidBase(value, "pair.request") &&
-        isPairingCode(value.code)
+        hasExactKeys(value, ["v", "type", "clientNonce", "origin", "role"]) &&
+        hasValidBase(value, "pair.hello") &&
+        isBase64Url256(value.clientNonce) &&
+        isChromeExtensionOrigin(value.origin) &&
+        value.role === "extension"
+      );
+    case "pair.challenge":
+      return (
+        hasExactKeys(value, [
+          "v",
+          "type",
+          "clientNonce",
+          "serverNonce",
+          "origin",
+          "clientRole",
+          "serverRole",
+          "serverHmac"
+        ]) &&
+        hasValidBase(value, "pair.challenge") &&
+        hasValidPairingBindingFields(value) &&
+        isBase64Url256(value.serverHmac)
+      );
+    case "pair.response":
+      return (
+        hasExactKeys(value, [
+          "v",
+          "type",
+          "clientNonce",
+          "serverNonce",
+          "origin",
+          "clientRole",
+          "serverRole",
+          "clientHmac"
+        ]) &&
+        hasValidBase(value, "pair.response") &&
+        hasValidPairingBindingFields(value) &&
+        isBase64Url256(value.clientHmac)
       );
     case "pair.granted":
       return (
@@ -423,6 +495,14 @@ export function isAuthBinding(value: unknown): value is AuthBinding {
       "serverRole"
     ]) &&
     hasValidAuthBindingFields(value)
+  );
+}
+
+export function isPairingBinding(value: unknown): value is PairingBinding {
+  return (
+    isRecord(value) &&
+    hasExactKeys(value, ["clientNonce", "serverNonce", "origin", "clientRole", "serverRole"]) &&
+    hasValidPairingBindingFields(value)
   );
 }
 
@@ -530,7 +610,9 @@ export function isProtocolMessage(value: unknown): value is ProtocolMessage {
   }
 
   switch (value.type) {
-    case "pair.request":
+    case "pair.hello":
+    case "pair.challenge":
+    case "pair.response":
     case "pair.granted":
     case "pair.rejected":
       return isPairingMessage(value);
@@ -591,6 +673,31 @@ function assertAuthRole(role: AuthRole): void {
   if (!isOneOf(role, AUTH_ROLES)) {
     throw new ProtocolValidationError("invalid_message", "Authentication proof role is invalid.");
   }
+}
+
+function assertPairingBinding(binding: PairingBinding): void {
+  if (!isPairingBinding(binding)) {
+    throw new ProtocolValidationError("invalid_message", "Value does not match a pairing binding.");
+  }
+}
+
+/** Stable, interoperable input proving both sides know the out-of-band pairing key. */
+export function canonicalizePairingProofInput(binding: PairingBinding, prover: AuthRole): string {
+  assertPairingBinding(binding);
+  assertAuthRole(prover);
+  return JSON.stringify([
+    "meet-deck/pairing-proof/v1",
+    prover,
+    binding.clientNonce,
+    binding.serverNonce,
+    binding.origin,
+    binding.clientRole,
+    binding.serverRole
+  ]);
+}
+
+export function encodePairingProofInput(binding: PairingBinding, prover: AuthRole): Uint8Array {
+  return utf8Encoder.encode(canonicalizePairingProofInput(binding, prover));
 }
 
 /** Stable, interoperable input for the client and server authentication proofs. */

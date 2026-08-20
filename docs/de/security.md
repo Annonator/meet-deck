@@ -33,25 +33,29 @@ Betriebssystems liegt außerhalb der Schutzgrenze.
 
 ## Bedrohungen und Kontrollen
 
-| Bedrohung                          | Erforderliche Kontrolle                                                                                                         |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| Remote-/LAN-Zugriff                | ausschließlich IPv4 `127.0.0.1`, unerwarteten Upgrade-`Host` ablehnen; nie `localhost`, Wildcard, IPv6, LAN oder Cloud-Relay    |
-| Beliebige Webseite verbindet sich  | Pairing standardmäßig zu; exakte gekoppelte `chrome-extension://`-Origin binden; vor Befehlen authentifizieren                  |
-| Pairingcode wird geraten           | acht Stellen, zwei Minuten, maximal fünf Fehlversuche, bewusst neu öffnen                                                       |
-| Nachweis wird gestohlen/wiederholt | zufälliges 256-Bit-Token, frische Client-/Server-Nonces, an Sitzung/Origin/Rollen gebundene gegenseitige HMAC-SHA-256-Nachweise |
-| Ungültiger/zu großer Frame         | UTF-8-/JSON-/Schema-Prüfung, exakte Felder, `v: 1`, maximal 16 KiB                                                              |
-| Replay/Zuordnungsfehler            | MAC auf jedem geschützten Frame, Sitzungs-/Richtungsbindung, strikt steigende Sequenz je Richtung, unbekannte Aktionen ablehnen |
-| Falsches Meeting                   | `meetingMultiplicity: one` verlangen; bei `none`/`multiple` blockieren; URL/Titel nie zum Routing nutzen                        |
-| Meet-DOM ändert sich               | exakte Rollen/Accessibility-Zustände, nur ein Treffer und direkt vor Klick neu prüfen, sonst `unsupported_ui`                   |
-| Secret/Meetingmetadaten in Logs    | Code/Token/HMAC/MAC, Payload-Dumps, Accessibility-Labels und Meet-Freitext nie loggen; nur endliche Fehlercodes                 |
-| Freigabe ohne Quellenwahl          | zwingenden Chrome-/macOS-Picker nutzen; keine `desktopCapture`-Berechtigung                                                     |
-| MV3-Reconnect umgeht Auth          | jeden neuen WebSocket vor Zuständen/Befehlen authentifizieren                                                                   |
+| Bedrohung                              | Erforderliche Kontrolle                                                                                                         |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Remote-/LAN-Zugriff                    | ausschließlich IPv4 `127.0.0.1`, unerwarteten Upgrade-`Host` ablehnen; nie `localhost`, Wildcard, IPv6, LAN oder Cloud-Relay    |
+| Beliebige Webseite verbindet sich      | Pairing standardmäßig zu; exakte gekoppelte `chrome-extension://`-Origin binden; vor Befehlen authentifizieren                  |
+| Pairingschlüssel wird geraten          | zufällige 125 Bit, zwei Minuten, maximal fünf ungültige Client-Nachweise, bewusst neu öffnen                                    |
+| Lokaler Prozess imitiert erstes Plugin | Schlüssel nie über Socket senden; Plugin-HMAC über Nonces, Origin und Rollen vor Client-Nachweis prüfen                         |
+| Nachweis wird gestohlen/wiederholt     | zufälliges 256-Bit-Token, frische Client-/Server-Nonces, an Sitzung/Origin/Rollen gebundene gegenseitige HMAC-SHA-256-Nachweise |
+| Ungültiger/zu großer Frame             | UTF-8-/JSON-/Schema-Prüfung, exakte Felder, `v: 1`, maximal 16 KiB                                                              |
+| Replay/Zuordnungsfehler                | MAC auf jedem geschützten Frame, Sitzungs-/Richtungsbindung, strikt steigende Sequenz je Richtung, unbekannte Aktionen ablehnen |
+| Falsches Meeting                       | `meetingMultiplicity: one` verlangen; bei `none`/`multiple` blockieren; URL/Titel nie zum Routing nutzen                        |
+| Meet-DOM ändert sich                   | exakte Rollen/Accessibility-Zustände, nur ein Treffer und direkt vor Klick neu prüfen, sonst `unsupported_ui`                   |
+| Secret/Meetingmetadaten in Logs        | Code/Token/HMAC/MAC, Payload-Dumps, Accessibility-Labels und Meet-Freitext nie loggen; nur endliche Fehlercodes                 |
+| Freigabe ohne Quellenwahl              | zwingenden Chrome-/macOS-Picker nutzen; keine `desktopCapture`-Berechtigung                                                     |
+| MV3-Reconnect umgeht Auth              | jeden neuen WebSocket vor Zuständen/Befehlen authentifizieren                                                                   |
 
-Neue Kopplung ersetzt das alte Chrome-Profil. Authentifizierung bindet beide 256-Bit-Nonces, die
-zufällige Sitzung, die exakte Chrome-Extension-Origin und die Rollen Extension/Plugin. Der
-Servernachweis authentifiziert auch das Plugin gegenüber der Extension. Secrets entstehen aus
-kryptografisch sicheren Zufallswerten, werden nie aus URL-Parametern akzeptiert und nach Möglichkeit
-konstantzeitlich verglichen.
+Neue Kopplung ersetzt das alte Chrome-Profil. Der 125-Bit-Einmalschlüssel wird nur über den
+sichtbaren Property Inspector und das Popup übertragen, niemals in einem WebSocket-Frame. Frische
+Client-/ Server-Nonces, die exakte Chrome-Extension-Origin und beide Rollen werden in getrennte
+HMAC-Nachweise des Plugins und der Extension gebunden. Die Extension prüft zuerst den
+Plugin-Nachweis, bevor sie ihren Nachweis sendet oder ein Token akzeptiert. Die spätere
+Authentifizierung bindet beide 256-Bit- Nonces, die zufällige Sitzung, Origin und Rollen. Secrets
+entstehen aus kryptografisch sicheren Zufallswerten, werden nie aus URL-Parametern akzeptiert und
+nach Möglichkeit konstantzeitlich verglichen.
 
 Das Plugin speichert das Token nur in Stream-Deck-**Global Settings**, niemals in exportierbaren
 Action Settings. Der Property Inspector tauscht ausschließlich typisierte Steuernachrichten mit dem
@@ -128,7 +132,7 @@ DNS-Rebinding, Native Messaging oder Remote-Fallback.
 - prüfen, dass der Reconnect-Alarm nur festen Namen/Zeitplan enthält, ausschließlich für einen
   Loopback-Versuch weckt und danach bei fehlendem Bedarf gelöscht wird;
 - Traffic, Chrome Storage, Stream-Deck-Global-/Action-Settings, exportiertes Profil und Logs
-  enthalten keine verbotenen Meetingmetadaten, Accessibility-Labels, Pairingcodes oder Token.
+  enthalten keine verbotenen Meetingmetadaten, Accessibility-Labels, Pairingschlüssel oder Token.
 
 ## Sicherheitslücken melden
 

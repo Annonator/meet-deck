@@ -25,12 +25,13 @@ content.
    release and verify their checksums.
 2. Add all four actions to LCD keys. Confirm unpaired/offline states are visible and pressing keys
    causes no browser action.
-3. Open pairing. Verify the code has exactly eight digits, expires after two minutes, and is
-   rejected after expiry.
-4. Submit five wrong codes. Verify pairing closes/rate-limits and only an explicit new pairing
-   window restores it.
+3. Open pairing. Verify the key has exactly 25 characters from the unambiguous documented alphabet,
+   expires after two minutes, and is rejected after expiry.
+4. With the local protocol harness, submit five invalid client proofs. Verify pairing closes/rate-
+   limits and only an explicit new pairing window restores it. Also verify a hostile server proof is
+   rejected before the extension sends its proof or stores a token.
 5. Test first-time denial on a clean Chrome profile/install, or on a valid test port whose origin
-   was never approved. Open a new pairing window, enter the code, choose **Pair and connect**, and
+   was never approved. Open a new pairing window, enter the key, choose **Pair and connect**, and
    deny Chrome's prompt for `ws://127.0.0.1:<configured port>/*`. Verify pairing is not completed
    and the extension stays offline without a retry storm or remote contact. Do not try to
    manufacture this case by removing a previously approved optional grant: Chrome can restore that

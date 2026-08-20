@@ -23,7 +23,7 @@ Steuerzustand und begrenzte Befehlsergebnisse zum gekoppelten lokalen Stream-Dec
 | `meetingMultiplicity` sowie endliche Mikrofon-/Kamera-/Hand-/Eigenpräsentationszustände | Tasten anzeigen und falsches Meeting verhindern                    | gekoppeltes Plugin auf `127.0.0.1`             | nur Arbeitsspeicher                                                                                            |
 | begrenzter Befehls-Ergebnisstatus und zufällige Befehls-ID                              | Steueraktion bestätigen und zuordnen                               | Browser und gekoppeltes Plugin                 | nur Arbeitsspeicher                                                                                            |
 | zufällige undurchsichtige Transport-Sitzungs-IDs                                        | lokale Nachrichten absichern und ordnen                            | Browser und gekoppeltes Plugin                 | nur Arbeitsspeicher                                                                                            |
-| achtstelliger Pairingcode                                                               | bewusstes erstmaliges Koppeln                                      | Loopback-Verbindung                            | höchstens zwei Minuten                                                                                         |
+| zufälliger 125-Bit-Einmalschlüssel                                                      | bewusstes Koppeln und Authentisierung des ersten Peers             | Plugin-/Extension-Speicher; nie über Loopback  | Pluginfenster höchstens zwei Minuten; Extension nur während des Vordergrundversuchs                            |
 | zufälliges 256-Bit-Meet-Deck-Pairing-Token                                              | spätere lokale Verbindungen authentifizieren                       | Chrome-Storage und lokale Plugin-Einstellungen | je Seite bis zum dortigen Löschen/Entkoppeln, Löschen des Speichers oder Entfernen der Software                |
 | konfigurierter Loopback-Port                                                            | die gewählte lokale Plugin-Origin finden                           | Chrome-Storage                                 | bis Änderung, Löschen des Extension-Speichers oder Entfernen der Extension; **Pairing löschen** behält ihn bei |
 | exakte Chrome-Hostfreigabe für den Port                                                 | ausschließlich die gewählte lokale Plugin-Origin erlauben          | Chrome-Berechtigungsspeicher                   | bis Bereinigung nach Portwechsel, **Pairing löschen**, Widerruf oder Entfernen der Extension                   |
@@ -58,10 +58,11 @@ Daten nicht und sendet sie nicht an das Plugin:
 - Analytics, Crash-Telemetrie, Nutzungsmetriken oder Werbe-IDs.
 
 Das lokal gespeicherte Meet-Deck-Pairing-Token ist von einer Google-/Account-Authentifizierung zu
-unterscheiden. Das Stream-Deck-Plugin erzeugt diesen zufälligen 256-Bit-Wert erst nach Annahme des
-Einmalcodes. Er liegt ausschließlich in `chrome.storage.local` und den Stream-Deck-Global-Settings,
-dient nur der gegenseitigen Authentifizierung der Loopback-Bridge und wird nie an Google oder einen
-entfernten Dienst gesendet.
+unterscheiden. Das Stream-Deck-Plugin erzeugt diesen zufälligen 256-Bit-Wert erst, nachdem beide
+Seiten den Einmalschlüssel nachgewiesen haben, ohne ihn über den Socket zu senden. Er liegt
+ausschließlich in `chrome.storage.local` und den Stream-Deck-Global-Settings, dient nur der
+gegenseitigen Authentifizierung der Loopback-Bridge und wird nie an Google oder einen entfernten
+Dienst gesendet.
 
 ## Browserzugriff
 

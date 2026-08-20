@@ -33,6 +33,30 @@ export async function verifyHmacSha256(
   }
 }
 
+export async function hmacSha256TextKey(secret: string, payload: Uint8Array): Promise<string> {
+  const key = await importRawHmacKey(encoder.encode(secret), ["sign"]);
+  const signature = await crypto.subtle.sign("HMAC", key, toArrayBuffer(payload));
+  return encodeBase64Url(new Uint8Array(signature));
+}
+
+export async function verifyHmacSha256TextKey(
+  secret: string,
+  payload: Uint8Array,
+  expected: string
+): Promise<boolean> {
+  try {
+    const key = await importRawHmacKey(encoder.encode(secret), ["verify"]);
+    return crypto.subtle.verify(
+      "HMAC",
+      key,
+      toArrayBuffer(decodeBase64Url(expected)),
+      toArrayBuffer(payload)
+    );
+  } catch {
+    return false;
+  }
+}
+
 export async function deriveSessionHmacKey(
   secret: string,
   salt: Uint8Array,
@@ -96,9 +120,13 @@ export function decodeBase64Url(value: string): Uint8Array {
 }
 
 async function importHmacKey(secret: string, usages: KeyUsage[]): Promise<CryptoKey> {
+  return importRawHmacKey(decodeBase64Url(secret), usages);
+}
+
+async function importRawHmacKey(secret: Uint8Array, usages: KeyUsage[]): Promise<CryptoKey> {
   return crypto.subtle.importKey(
     "raw",
-    toArrayBuffer(decodeBase64Url(secret)),
+    toArrayBuffer(secret),
     { hash: "SHA-256", name: "HMAC" },
     false,
     usages

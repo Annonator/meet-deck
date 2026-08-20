@@ -5,10 +5,12 @@ protocol. The package is browser-compatible and uses no Node.js-only APIs.
 
 ## Transport model
 
-Pairing exchanges an eight-digit code for a random 256-bit token. Authentication then binds a client
+Pairing uses a 125-bit human-readable one-time key as an out-of-band trust root. The key never
+crosses the WebSocket: the plugin and extension instead exchange fresh nonces and role-separated
+HMAC proofs, then the plugin issues a random 256-bit token. Later authentication binds a client
 nonce, server nonce, pinned Chrome extension origin, fixed client/server roles, and a random
-connection-session id into mutual HMAC proofs. The package exposes canonical UTF-8 inputs for those
-proofs and for deriving two direction-separated HKDF-SHA-256 session keys.
+connection-session id into mutual HMAC proofs. The package exposes canonical UTF-8 inputs for both
+proof ceremonies and for deriving two direction-separated HKDF-SHA-256 session keys.
 
 For HKDF-SHA-256, decode the pairing token from base64url and use those 32 bytes as IKM, use
 `encodeSessionKeySalt(binding)` directly as salt, and call

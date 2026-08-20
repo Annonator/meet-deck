@@ -31,10 +31,10 @@ analytics, or cloud relay.
 
 Use it with macOS 13 or newer, Stream Deck 7.1 or newer, Chrome 147 or newer, a Stream Deck with LCD
 keys, and Google Meet controls in English or German. Install the matching companion extension, add
-the actions, then pair once with a short-lived code. Stream Deck settings are English; the companion
-popup and onboarding follow Chrome's UI language in English or German. Chrome still requires you to
-choose and confirm every screen-share source. If browser user action is needed, the Presentation key
-briefly shows `⌃⌘T`; press `Control+Command+T` in Meet to continue.
+the actions, then pair once with a short-lived 25-character key. Stream Deck settings are English;
+the companion popup and onboarding follow Chrome's UI language in English or German. Chrome still
+requires you to choose and confirm every screen-share source. If browser user action is needed, the
+Presentation key briefly shows `⌃⌘T`; press `Control+Command+T` in Meet to continue.
 
 - Microphone and camera toggles with live state
 - Raise and lower hand
@@ -60,7 +60,7 @@ briefly shows `⌃⌘T`; press `Control+Command+T` in Meet to continue.
    plugin artifact during review.
 2. Follow the Setup link to install the matching Meet Deck companion extension in Google Chrome.
 3. Add the Microphone, Camera, Hand, and Presentation actions to Stream Deck LCD keys.
-4. Select any Meet Deck action, choose **Start pairing**, and enter the displayed eight-digit code
+4. Select any Meet Deck action, choose **Start pairing**, and enter the displayed 25-character key
    in the companion popup within two minutes. Choose **Pair and connect** (**Koppeln und verbinden**
    in German).
 5. Approve only the exact optional Chrome host grant for `ws://127.0.0.1:<configured port>/*` if
@@ -85,7 +85,7 @@ briefly shows `⌃⌘T`; press `Control+Command+T` in Meet to continue.
    the Maker-provided review ZIP, then load the extracted directory containing `manifest.json` as an
    unpacked Chrome extension. This draft does not claim Chrome Web Store availability.
 3. Add all four actions to LCD keys. Select one, open its property inspector, start pairing, and
-   enter the eight-digit code in the companion popup before its two-minute expiry. Choose **Pair and
+   enter the 25-character key in the companion popup before its two-minute expiry. Choose **Pair and
    connect** (**Koppeln und verbinden** in German) and approve only the exact optional Chrome host
    grant for `ws://127.0.0.1:<configured port>/*` if prompted. Confirm **Securely connected to
    Stream Deck** (**Sicher mit Stream Deck verbunden** in German) in the extension and **Extension
@@ -128,7 +128,7 @@ and re-adding items is required to change the order.
 | 3         | `assets/export/meet-deck-gallery-03-privacy.png`  | Authenticated loopback and data boundary                 |
 | 4         | `assets/export/meet-deck-demo.mp4`                | Required honest hardware demonstration; still to capture |
 
-The pairing graphic deliberately labels its eight-digit code as illustrative. It is an English
+The pairing graphic deliberately labels its 25-character key as illustrative. It is an English
 diagram rather than an extension screenshot; the actual companion popup and onboarding follow
 Chrome's UI language in English or German.
 

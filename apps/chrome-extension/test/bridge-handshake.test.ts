@@ -1,12 +1,14 @@
 import {
   PROTOCOL_VERSION,
   encodeAuthProofInput,
+  encodePairingProofInput,
   encodeProtectedMessageMacInput,
   encodeSessionKeyInfo,
   encodeSessionKeySalt,
   safeParseProtocolMessage,
   serializeProtocolMessage,
   type AuthBinding,
+  type PairingBinding,
   type ProtectedMacInput,
   type ProtocolMessage
 } from "@meet-deck/protocol";
@@ -17,12 +19,14 @@ import {
   deriveSessionHmacKey,
   encodeBase64Url,
   hmacSha256Bytes,
+  hmacSha256TextKey,
   signWithKey,
   verifyWithKey
 } from "../src/bridge/crypto";
 
 const EXTENSION_ID = "a".repeat(32);
 const ORIGIN = `chrome-extension://${EXTENSION_ID}`;
+const PAIRING_KEY = "23456789ABCDEFGHJKLMNPQRS";
 
 class FakeWebSocket extends EventTarget {
   static readonly CLOSED = 3;
@@ -130,17 +134,47 @@ describe("BridgeClient authenticated transport", () => {
     await bridge.start();
     expect(FakeWebSocket.instances).toHaveLength(0);
 
-    const pairing = bridge.pair("12345678");
+    const pairing = bridge.pair(PAIRING_KEY);
     await vi.waitFor(() => expect(FakeWebSocket.instances).toHaveLength(1));
     const socket = FakeWebSocket.instances[0];
     expect(socket?.url).toBe("ws://127.0.0.1:53421/v1");
     socket?.open();
-    expect(parseSent(socket, 0)).toEqual({ v: 1, type: "pair.request", code: "12345678" });
+    const pairHello = parseSent(socket, 0);
+    expect(pairHello).toMatchObject({ type: "pair.hello", origin: ORIGIN, role: "extension" });
+    if (pairHello?.type !== "pair.hello") {
+      throw new Error("Expected pair hello");
+    }
+
+    const pairingBinding: PairingBinding = {
+      clientNonce: pairHello.clientNonce,
+      serverNonce: encodeBase64Url(new Uint8Array(32).fill(6)),
+      origin: ORIGIN,
+      clientRole: "extension",
+      serverRole: "plugin"
+    };
+    socket?.serverMessage({
+      v: 1,
+      type: "pair.challenge",
+      ...pairingBinding,
+      serverHmac: await hmacSha256TextKey(
+        PAIRING_KEY,
+        encodePairingProofInput(pairingBinding, "plugin")
+      )
+    });
+    await vi.waitFor(() => expect(socket?.sent).toHaveLength(2));
+    const pairResponse = parseSent(socket, 1);
+    expect(pairResponse).toMatchObject({ type: "pair.response", ...pairingBinding });
+    if (pairResponse?.type !== "pair.response") {
+      throw new Error("Expected pair response");
+    }
+    expect(pairResponse.clientHmac).toBe(
+      await hmacSha256TextKey(PAIRING_KEY, encodePairingProofInput(pairingBinding, "extension"))
+    );
 
     const token = encodeBase64Url(new Uint8Array(32).fill(7));
     socket?.serverMessage({ v: 1, type: "pair.granted", token });
-    await vi.waitFor(() => expect(socket?.sent).toHaveLength(2));
-    const hello = parseSent(socket, 1);
+    await vi.waitFor(() => expect(socket?.sent).toHaveLength(3));
+    const hello = parseSent(socket, 2);
     expect(hello).toMatchObject({ type: "auth.hello", origin: ORIGIN, role: "extension" });
     if (hello?.type !== "auth.hello") {
       throw new Error("Expected auth hello");
@@ -155,8 +189,8 @@ describe("BridgeClient authenticated transport", () => {
       serverRole: "plugin"
     };
     socket?.serverMessage({ v: 1, type: "auth.challenge", ...binding });
-    await vi.waitFor(() => expect(socket?.sent).toHaveLength(3));
-    const response = parseSent(socket, 2);
+    await vi.waitFor(() => expect(socket?.sent).toHaveLength(4));
+    const response = parseSent(socket, 3);
     expect(response).toMatchObject({ type: "auth.response", ...binding });
     if (response?.type !== "auth.response") {
       throw new Error("Expected auth response");
@@ -175,8 +209,8 @@ describe("BridgeClient authenticated transport", () => {
     });
 
     await expect(pairing).resolves.toBe(true);
-    await vi.waitFor(() => expect(socket?.sent).toHaveLength(4));
-    const protectedState = parseSent(socket, 3);
+    await vi.waitFor(() => expect(socket?.sent).toHaveLength(5));
+    const protectedState = parseSent(socket, 4);
     expect(protectedState).toMatchObject({
       type: "protected",
       session: binding.session,
@@ -221,9 +255,9 @@ describe("BridgeClient authenticated transport", () => {
       mac: await signWithKey(inboundKey, encodeProtectedMessageMacInput(commandInput))
     };
     socket?.serverMessage(commandFrame);
-    await vi.waitFor(() => expect(socket?.sent).toHaveLength(5));
+    await vi.waitFor(() => expect(socket?.sent).toHaveLength(6));
     expect(onCommand).toHaveBeenCalledOnce();
-    expect(parseSent(socket, 4)).toMatchObject({
+    expect(parseSent(socket, 5)).toMatchObject({
       type: "protected",
       direction: "extension_to_plugin",
       seq: 2,
@@ -235,6 +269,73 @@ describe("BridgeClient authenticated transport", () => {
     expect(onCommand).toHaveBeenCalledOnce();
 
     await bridge.forgetPairing();
+  });
+
+  it("rejects a hostile loopback peer before sending the pairing key or storing its token", async () => {
+    const bridge = createBridge();
+    await bridge.start();
+
+    const pairing = bridge.pair(PAIRING_KEY);
+    await vi.waitFor(() => expect(FakeWebSocket.instances).toHaveLength(1));
+    const hostileSocket = FakeWebSocket.instances[0];
+    hostileSocket?.open();
+    const hello = parseSent(hostileSocket, 0);
+    if (hello?.type !== "pair.hello") {
+      throw new Error("Expected pair hello");
+    }
+    expect(JSON.stringify(hello)).not.toContain(PAIRING_KEY);
+
+    const binding: PairingBinding = {
+      clientNonce: hello.clientNonce,
+      serverNonce: encodeBase64Url(new Uint8Array(32).fill(41)),
+      origin: ORIGIN,
+      clientRole: "extension",
+      serverRole: "plugin"
+    };
+    hostileSocket?.serverMessage({
+      v: 1,
+      type: "pair.challenge",
+      ...binding,
+      serverHmac: await hmacSha256TextKey(
+        "QRSTUVWXYZ23456789ABCDEFG",
+        encodePairingProofInput(binding, "plugin")
+      )
+    });
+
+    await expect(pairing).resolves.toBe(false);
+    expect(hostileSocket?.sent).toHaveLength(1);
+    expect(storage.has("meetDeck.bridge.v1")).toBe(false);
+    expect(bridge.status("none")).toMatchObject({
+      authentication: "rejected",
+      connection: "disconnected",
+      paired: false,
+      problem: "invalid_pairing_code"
+    });
+  });
+
+  it("rejects an attacker-chosen token before the local peer proves the pairing key", async () => {
+    const bridge = createBridge();
+    await bridge.start();
+
+    const pairing = bridge.pair(PAIRING_KEY);
+    await vi.waitFor(() => expect(FakeWebSocket.instances).toHaveLength(1));
+    const hostileSocket = FakeWebSocket.instances[0];
+    hostileSocket?.open();
+    const hello = parseSent(hostileSocket, 0);
+    expect(hello).toMatchObject({ type: "pair.hello", origin: ORIGIN, role: "extension" });
+    expect(JSON.stringify(hello)).not.toContain(PAIRING_KEY);
+
+    const attackerToken = encodeBase64Url(new Uint8Array(32).fill(43));
+    hostileSocket?.serverMessage({ v: 1, type: "pair.granted", token: attackerToken });
+
+    await expect(pairing).resolves.toBe(false);
+    expect(storage.has("meetDeck.bridge.v1")).toBe(false);
+    expect(bridge.status("none")).toMatchObject({
+      authentication: "rejected",
+      connection: "disconnected",
+      paired: false,
+      problem: "protocol_error"
+    });
   });
 
   it("fails closed when a paired local server stays silent after auth hello", async () => {
@@ -377,10 +478,32 @@ describe("BridgeClient authenticated transport", () => {
       }
     });
 
-    const pairing = bridge.pair("12345678");
+    const pairing = bridge.pair(PAIRING_KEY);
     await vi.advanceTimersByTimeAsync(0);
     const grantingSocket = FakeWebSocket.instances[0];
     grantingSocket?.open();
+    const pairHello = parseSent(grantingSocket, 0);
+    if (pairHello?.type !== "pair.hello") {
+      throw new Error("Expected pair hello before durable pairing commit");
+    }
+    const pairingBinding: PairingBinding = {
+      clientNonce: pairHello.clientNonce,
+      serverNonce: encodeBase64Url(new Uint8Array(32).fill(25)),
+      origin: ORIGIN,
+      clientRole: "extension",
+      serverRole: "plugin"
+    };
+    grantingSocket?.serverMessage({
+      v: 1,
+      type: "pair.challenge",
+      ...pairingBinding,
+      serverHmac: await hmacSha256TextKey(
+        PAIRING_KEY,
+        encodePairingProofInput(pairingBinding, "plugin")
+      )
+    });
+    await vi.waitFor(() => expect(grantingSocket?.sent).toHaveLength(2));
+
     const token = encodeBase64Url(new Uint8Array(32).fill(27));
     grantingSocket?.serverMessage({ v: 1, type: "pair.granted", token });
     await vi.waitFor(() => expect(storageSet).toHaveBeenCalledOnce());

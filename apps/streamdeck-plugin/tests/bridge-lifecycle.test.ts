@@ -71,6 +71,7 @@ import {
   parseProtocolMessage,
   serializeProtocolMessage,
   type AuthBinding,
+  type PairingBinding,
   type ProtectedMacInput,
   type ProtocolMessage
 } from "@meet-deck/protocol";
@@ -84,7 +85,13 @@ import {
   isUpgradeAllowed,
   type PairingCredentials
 } from "../src/bridge-server.js";
-import { PAIRING_TTL_MS, createMac, createProof, deriveSessionKey } from "../src/security.js";
+import {
+  PAIRING_TTL_MS,
+  createMac,
+  createPairingProof,
+  createProof,
+  deriveSessionKey
+} from "../src/security.js";
 
 const oldOrigin = `chrome-extension://${"a".repeat(32)}`;
 const newOrigin = `chrome-extension://${"b".repeat(32)}`;
@@ -162,6 +169,40 @@ function pairingCode(status: { readonly pairingCode?: string }): string {
     throw new Error("Pairing did not open");
   }
   return status.pairingCode;
+}
+
+function provePairing(socket: FakeSocketHarness, origin: string, key: string): void {
+  send(socket, {
+    v: PROTOCOL_VERSION,
+    type: "pair.hello",
+    clientNonce: Buffer.alloc(32, 4).toString("base64url"),
+    origin,
+    role: "extension"
+  });
+  const challenge = sent(socket, 0);
+  if (challenge.type !== "pair.challenge") {
+    throw new Error("Expected pairing challenge");
+  }
+  const binding: PairingBinding = {
+    clientNonce: challenge.clientNonce,
+    serverNonce: challenge.serverNonce,
+    origin: challenge.origin,
+    clientRole: challenge.clientRole,
+    serverRole: challenge.serverRole
+  };
+  expect(challenge.serverHmac).toBe(createPairingProof(key, binding, "plugin"));
+  send(socket, {
+    v: PROTOCOL_VERSION,
+    type: "pair.response",
+    ...binding,
+    clientHmac: createPairingProof(key, binding, "extension")
+  });
+}
+
+function expectNoPairGrant(socket: FakeSocketHarness): void {
+  expect(socket.sent.map((frame) => parseProtocolMessage(frame))).not.toContainEqual(
+    expect.objectContaining({ type: "pair.granted" })
+  );
 }
 
 async function authenticate(
@@ -286,11 +327,7 @@ describe("Bridge credential lifecycle", () => {
     const socket = createSocket();
     connect(socket, newOrigin);
 
-    send(socket, {
-      v: PROTOCOL_VERSION,
-      type: "pair.request",
-      code: pairingCode(pairing)
-    });
+    provePairing(socket, newOrigin, pairingCode(pairing));
     await vi.advanceTimersByTimeAsync(0);
 
     expect(socket.closes).toContainEqual({ code: 1011, reason: "Pairing could not be saved" });
@@ -315,11 +352,7 @@ describe("Bridge credential lifecycle", () => {
     const pairingSocket = createSocket();
     const originalServer = currentServer();
     connect(pairingSocket, newOrigin, originalServer);
-    send(pairingSocket, {
-      v: PROTOCOL_VERSION,
-      type: "pair.request",
-      code: pairingCode(pairing)
-    });
+    provePairing(pairingSocket, newOrigin, pairingCode(pairing));
     await vi.waitFor(() => expect(persistCredentials).toHaveBeenCalledTimes(1));
 
     expect(originalServer.options.verifyClient({ req: request(oldOrigin) })).toBe(false);
@@ -342,7 +375,7 @@ describe("Bridge credential lifecycle", () => {
     await vi.waitFor(() => expect(persistCredentials).toHaveBeenCalledTimes(2));
 
     expect(persistCredentials).toHaveBeenLastCalledWith(oldCredentials);
-    expect(pairingSocket.sent).toHaveLength(0);
+    expectNoPairGrant(pairingSocket);
     expect(bridge.credentials).toEqual(oldCredentials);
     expect(bridge.status()).toMatchObject({
       connected: false,
@@ -362,11 +395,7 @@ describe("Bridge credential lifecycle", () => {
     const pairing = bridge.startPairing();
     const socket = createSocket();
     connect(socket, newOrigin);
-    send(socket, {
-      v: PROTOCOL_VERSION,
-      type: "pair.request",
-      code: pairingCode(pairing)
-    });
+    provePairing(socket, newOrigin, pairingCode(pairing));
     await vi.waitFor(() => expect(persistCredentials).toHaveBeenCalledTimes(1));
 
     bridge.cancelPairing();
@@ -375,7 +404,7 @@ describe("Bridge credential lifecycle", () => {
     await vi.waitFor(() => expect(persistCredentials).toHaveBeenCalledTimes(2));
 
     expect(persistCredentials).toHaveBeenLastCalledWith(oldCredentials);
-    expect(socket.sent).toHaveLength(0);
+    expectNoPairGrant(socket);
     expect(bridge.status().pairingCode).toBeUndefined();
   });
 
@@ -391,11 +420,7 @@ describe("Bridge credential lifecycle", () => {
     const pairing = bridge.startPairing();
     const socket = createSocket();
     connect(socket, newOrigin);
-    send(socket, {
-      v: PROTOCOL_VERSION,
-      type: "pair.request",
-      code: pairingCode(pairing)
-    });
+    provePairing(socket, newOrigin, pairingCode(pairing));
     await vi.waitFor(() => expect(persistCredentials).toHaveBeenCalledTimes(1));
 
     await bridge.unpair();
@@ -405,7 +430,7 @@ describe("Bridge credential lifecycle", () => {
 
     expect(persistCredentials.mock.calls[1]?.[0]).toBeUndefined();
     expect(persistCredentials).toHaveBeenLastCalledWith(undefined);
-    expect(socket.sent).toHaveLength(0);
+    expectNoPairGrant(socket);
     expect(bridge.credentials).toBeUndefined();
   });
 });

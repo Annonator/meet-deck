@@ -66,7 +66,7 @@ Installable artifacts are written to `artifacts/`:
 
 For development, load `apps/chrome-extension/dist/` as an unpacked extension in Chrome. Install the
 `.streamDeckPlugin` file with Stream Deck, add a Meet Deck action to a key, open its property
-inspector, start pairing, then enter the displayed eight-digit code in the extension popup.
+inspector, start pairing, then enter the displayed 25-character one-time key in the extension popup.
 
 Detailed instructions are in [Setup](docs/en/setup.md). Hardware acceptance steps are in
 [Hardware E2E](docs/en/hardware-e2e.md).

@@ -42,7 +42,7 @@ const browser = await chromium.launch({
 });
 
 try {
-  const pairPopup = await capturePopup(browser, unpairedStatus, "48273196");
+  const pairPopup = await capturePopup(browser, unpairedStatus, "23456-789AB-CDEFG-HJKLM-NPQRS");
   const connectedPopup = await capturePopup(browser, connectedStatus);
   const privacyCard = await capturePrivacyCard(browser);
   const actionImages = await readActionImages();
@@ -136,6 +136,7 @@ async function capturePopup(browserInstance, status, pairingCode) {
       throw new Error("Unpaired popup unexpectedly hid the pairing form");
     }
     await page.locator("#pair-code").fill(pairingCode);
+    await page.locator("#pair-code").blur();
   }
 
   const height = await page.evaluate(() => {
@@ -278,10 +279,10 @@ function pairingMarkup(popupImage) {
   return `<main class="screenshot pair">
   <section class="copy">
     <div class="eyebrow">Pair locally</div>
-    <h1>Connect with an<br>eight-digit code.</h1>
+    <h1>Connect with a<br>one-time key.</h1>
     <p>Meet Deck requests access only to the configured WebSocket origin on 127.0.0.1.</p>
   </section>
-  <div class="frame-label">Actual extension UI · example code</div>
+  <div class="frame-label">Actual extension UI · example key</div>
   <div class="ui-frame"><img src="${popupImage}" alt="Meet Deck pairing popup"></div>
 </main>`;
 }
