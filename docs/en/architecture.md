@@ -89,19 +89,23 @@ Meet's single-page navigation.
 The plugin listens only on `127.0.0.1`, default port `53421`. Listening on `0.0.0.0`, a LAN address,
 or a public interface is prohibited.
 
-Pairing is closed by default. The Stream Deck property inspector opens a two-minute pairing window
-and displays an eight-digit one-time code. After the same code is entered in the extension popup,
-the plugin issues a random 256-bit token. Later connections exchange fresh client/server nonces and
-bind the HMAC-SHA-256 proof to the random session, exact `chrome-extension://…` origin, and
-extension/plugin roles. The plugin also proves possession of the token to the extension. New pairing
-replaces the previously paired Chrome profile. Five failed attempts close the pairing window until
-the user explicitly reopens it.
+Pairing is closed by default and can open only while the genuine plugin owns the configured
+listener. The Stream Deck property inspector opens a two-minute pairing window and displays a random
+125-bit, 25-character one-time key. After the same key is entered in the extension popup, the
+extension sends only a fresh nonce and its origin. The plugin proves the key over both nonces, the
+origin, and fixed roles; only after verifying that proof does the extension return its own
+role-separated proof. The key itself never crosses the WebSocket. The plugin then issues a random
+256-bit token. Later connections exchange fresh client/server nonces and bind the HMAC-SHA-256 proof
+to the random session, exact `chrome-extension://…` origin, and extension/plugin roles. The plugin
+also proves possession of the token to the extension. New pairing replaces the previously paired
+Chrome profile. Five invalid client proofs close the pairing window until the user explicitly
+reopens it.
 
 After authentication, every application message is carried in a `protected` envelope with the
 session, direction, strictly increasing per-direction sequence number, and MAC. Command frames are
 plugin-to-extension; state/result frames are extension-to-plugin. Nonces and sequences prevent
 replay; invalid, oversized, wrong-direction, unknown-version, or structurally unexpected messages
-are rejected. Tokens, pairing codes, proofs, and frame MACs must never appear in logs.
+are rejected. Tokens, pairing keys, proofs, and frame MACs must never appear in logs.
 
 The MV3 service worker may be suspended. A heartbeat and bounded exponential reconnect restore the
 local session without weakening authentication. Before a foreground pairing or connection attempt,

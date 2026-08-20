@@ -46,18 +46,19 @@ ersetzen und unter `chrome://extensions` **Neu laden** wählen.
 1. In der Stream-Deck-App eine Meet-Deck-Aktion auswählen, um den Property Inspector zu öffnen.
 2. `127.0.0.1:53421` beibehalten, sofern der Port nicht belegt ist. Bei einer Änderung muss im
    Extension-Popup derselbe Port stehen.
-3. **Kopplung starten** wählen. Der achtstellige Code ist zwei Minuten gültig.
-4. Das Meet-Deck-Popup in Chrome öffnen, Code eingeben und **Koppeln und verbinden** wählen. Für ein
-   gespeichertes Pairing **Verbinden** wählen. Beide eindeutigen Nutzeraktionen erlauben nur die
-   Anfrage für die angezeigte konfigurierte Loopback-Origin.
+3. **Kopplung starten** wählen. Der 25-stellige Einmalschlüssel ist zwei Minuten gültig. Ist der
+   konfigurierte Port bereits belegt, bleibt das Pairing gesperrt.
+4. Das Meet-Deck-Popup in Chrome öffnen, Schlüssel eingeben und **Koppeln und verbinden** wählen.
+   Für ein gespeichertes Pairing **Verbinden** wählen. Beide eindeutigen Nutzeraktionen erlauben nur
+   die Anfrage für die angezeigte konfigurierte Loopback-Origin.
 5. Falls Chrome fragt, das exakte Host-Match-Pattern `ws://127.0.0.1:<konfigurierter Port>/*`
    erlauben. Eine Ablehnung lässt Meet Deck ohne Remote-Fallback offline; bei bereits erteilter
    passender Freigabe erscheint keine erneute Abfrage.
 6. In beiden Oberflächen den Status **Verbunden** prüfen.
 
 Eine neue Kopplung ersetzt das vorherige Chrome-Profil. Neuinstallation oder das Löschen des
-Extension-Speichers erfordert erneutes Koppeln. Einen Pairingcode nicht weitergeben; während seiner
-kurzen Gültigkeit erlaubt er lokale Steuerung.
+Extension-Speichers erfordert erneutes Koppeln. Einen Pairingschlüssel nicht weitergeben; während
+seiner kurzen Gültigkeit erlaubt er lokale Steuerung.
 
 Ein späterer Widerruf der Loopback-Hostfreigabe beendet neue Verbindungen und Reconnects. **Koppeln
 und verbinden** oder **Verbinden** kann sie erneut anfragen. Ein Portwechsel ändert die Origin und

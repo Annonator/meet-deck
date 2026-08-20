@@ -12,10 +12,12 @@ import {
   RESULT_STATUSES,
   TRANSPORT_DIRECTIONS,
   canonicalizeAuthProofInput,
+  canonicalizePairingProofInput,
   canonicalizeProtectedMessageMacInput,
   canonicalizeSessionKeyInfo,
   canonicalizeSessionKeySalt,
   encodeAuthProofInput,
+  encodePairingProofInput,
   encodeProtectedMessageMacInput,
   encodeSessionKeyInfo,
   encodeSessionKeySalt,
@@ -26,6 +28,7 @@ import {
   isMeetingStateMessage,
   isNewerSequence,
   isPairingCode,
+  isPairingBinding,
   isPairingMessage,
   isProtectedMacInput,
   isProtectedMessage,
@@ -37,6 +40,7 @@ import {
   type ApplicationMessage,
   type AuthBinding,
   type MeetingStateMessage,
+  type PairingBinding,
   type ProtectedMacInput,
   type ProtectedMessage
 } from "../src/index.js";
@@ -47,12 +51,23 @@ const mac = `${"C".repeat(42)}A`;
 const token = `${"D".repeat(42)}A`;
 const session = `${"S".repeat(42)}A`;
 const origin = `chrome-extension://${"a".repeat(32)}`;
+const pairingKey = "23456789ABCDEFGHJKLMNPQRS";
 const base64UrlAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 const validBase64Url256FinalCharacters = "AEIMQUYcgkosw048";
 
 function validBinding(): AuthBinding {
   return {
     session,
+    clientNonce,
+    serverNonce,
+    origin,
+    clientRole: "extension",
+    serverRole: "plugin"
+  };
+}
+
+function validPairingBinding(): PairingBinding {
+  return {
     clientNonce,
     serverNonce,
     origin,
@@ -228,11 +243,36 @@ describe("application messages", () => {
 });
 
 describe("pairing and bound mutual authentication", () => {
-  it("requires an eight-digit pairing code", () => {
-    expect(isPairingCode("01234567")).toBe(true);
-    expect(isPairingCode("1234567")).toBe(false);
-    expect(isPairingCode("1234567a")).toBe(false);
-    expect(isPairingMessage({ v: 1, type: "pair.request", code: "01234567" })).toBe(true);
+  it("requires a canonical 125-bit human-readable pairing key", () => {
+    expect(isPairingCode(pairingKey)).toBe(true);
+    expect(isPairingCode(pairingKey.slice(0, -1))).toBe(false);
+    expect(isPairingCode(`${pairingKey.slice(0, -1)}0`)).toBe(false);
+    expect(
+      isPairingMessage({
+        v: 1,
+        type: "pair.hello",
+        clientNonce,
+        origin,
+        role: "extension"
+      })
+    ).toBe(true);
+  });
+
+  it("validates pairing challenges, responses, and their canonical proofs", () => {
+    const binding = validPairingBinding();
+    expect(isPairingBinding(binding)).toBe(true);
+    expect(isPairingMessage({ v: 1, type: "pair.challenge", ...binding, serverHmac: mac })).toBe(
+      true
+    );
+    expect(isPairingMessage({ v: 1, type: "pair.response", ...binding, clientHmac: mac })).toBe(
+      true
+    );
+    expect(canonicalizePairingProofInput(binding, "plugin")).not.toBe(
+      canonicalizePairingProofInput(binding, "extension")
+    );
+    expect(new TextDecoder().decode(encodePairingProofInput(binding, "plugin"))).toBe(
+      canonicalizePairingProofInput(binding, "plugin")
+    );
   });
 
   it("accepts token issuance and bounded rejection reasons", () => {
@@ -496,7 +536,9 @@ describe("frame parsing", () => {
 
   it("round-trips every top-level message family", () => {
     const messages = [
-      { v: 1, type: "pair.request", code: "01234567" },
+      { v: 1, type: "pair.hello", clientNonce, origin, role: "extension" },
+      { v: 1, type: "pair.challenge", ...validPairingBinding(), serverHmac: mac },
+      { v: 1, type: "pair.response", ...validPairingBinding(), clientHmac: mac },
       { v: 1, type: "pair.granted", token },
       { v: 1, type: "pair.rejected", reason: "invalid_code" },
       { v: 1, type: "auth.hello", clientNonce, origin, role: "extension" },

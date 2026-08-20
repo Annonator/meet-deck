@@ -40,7 +40,8 @@ inspect those processes or input.
 | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
 | Remote/LAN client reaches bridge            | Bind only IPv4 `127.0.0.1`; reject unexpected upgrade `Host`; never use `localhost`, wildcard, IPv6, LAN, or cloud relay |
 | Arbitrary website opens loopback WebSocket  | Pairing closed by default; pin the exact paired `chrome-extension://` origin; authenticate before commands               |
-| Pairing-code guessing                       | Eight digits, two-minute expiry, maximum five failures, explicit reopen required                                         |
+| Pairing-key guessing                        | Random 125-bit key, two-minute expiry, maximum five invalid client proofs, explicit reopen required                      |
+| Hostile process impersonates first peer     | Key never crosses the socket; verify the plugin's nonce/origin/role-bound HMAC before returning the extension proof      |
 | Stolen/replayed connection proof            | Random 256-bit token; fresh client/server nonces; session/origin/role-bound mutual HMAC-SHA-256 proofs                   |
 | Malformed or oversized frame                | UTF-8/JSON/schema validation, exact keys, protocol `v: 1`, 16 KiB maximum, close invalid peers                           |
 | Command replay/confusion                    | MAC every protected frame; session/direction binding; strictly increasing per-direction sequence; reject unknown actions |
@@ -50,11 +51,15 @@ inspect those processes or input.
 | Share starts without informed source choice | Delegate final selection to the mandatory Chrome/macOS picker; no `desktopCapture` permission                            |
 | MV3 reconnect bypasses auth                 | Authenticate every new WebSocket before accepting state or commands                                                      |
 
-Pairing replaces the prior Chrome profile. Authentication binds both 256-bit nonces, the random
-session, exact Chrome-extension origin, and the extension/plugin roles. The server proof also lets
-the extension authenticate the plugin. Comparison of authentication values must avoid early-exit
-timing differences where the runtime provides a safe constant-time primitive. Secrets are generated
-with cryptographically secure randomness and are never accepted from URL/query parameters.
+Pairing replaces the prior Chrome profile. Its 125-bit one-time key is transferred only through the
+user-visible property inspector and popup, never in a WebSocket frame. Fresh client/server nonces,
+the exact Chrome-extension origin, and both roles are bound into separate plugin and extension HMAC
+proofs. The extension verifies the plugin proof before returning its proof or accepting a token.
+Later authentication binds both 256-bit nonces, the random session, exact origin, and roles. The
+server proof lets the extension authenticate the already-enrolled plugin. Comparison of
+authentication values must avoid early-exit timing differences where the runtime provides a safe
+constant-time primitive. Secrets are generated with cryptographically secure randomness and are
+never accepted from URL/query parameters.
 
 The plugin stores its token only in Stream Deck **global settings**, never action settings that can
 be exported with a profile. The property inspector exchanges typed control messages with the plugin
@@ -114,8 +119,9 @@ DNS rebinding, native messaging, or a remote fallback.
 
 - prove that LAN, wildcard/IPv6, unexpected Host, DNS-rebinding Host, missing/null/duplicate Origin,
   websites, and another extension cannot use the bridge;
-- cover code expiry, five failures, a race between two valid pairing clients, one-time use, and
-  re-pair invalidation of the old token/session;
+- cover key expiry, five invalid proofs, occupied-port and hostile-peer impersonation, a race
+  between two valid pairing clients, one-time use, and re-pair invalidation of the old
+  token/session;
 - reject wrong-key or modified origin/nonce/role proofs, tampered MACs, duplicate/old sequences,
   stale sessions, binary/invalid UTF-8, extra fields, and 16 KiB + 1 payloads;
 - reject content-script subframes, stale document identities, false sender data, and token access;
@@ -126,7 +132,7 @@ DNS rebinding, native messaging, or a remote fallback.
 - verify the reconnect alarm has only its fixed name/timing, wakes only for a loopback retry, and
   clears when no longer needed;
 - inspect traffic, Chrome storage, Stream Deck global/action settings, exported profiles, and logs
-  for forbidden meeting metadata, accessibility labels, pairing codes, and tokens.
+  for forbidden meeting metadata, accessibility labels, pairing keys, and tokens.
 
 ## Vulnerability reporting
 

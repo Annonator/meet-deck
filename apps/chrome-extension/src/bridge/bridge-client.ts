@@ -2,6 +2,7 @@ import {
   PROTOCOL_VERSION,
   ProtectedMessageReplayGuard,
   encodeAuthProofInput,
+  encodePairingProofInput,
   encodeProtectedMessageMacInput,
   encodeSessionKeyInfo,
   encodeSessionKeySalt,
@@ -15,6 +16,7 @@ import {
   type CommandMessage,
   type MeetingStateMessage,
   type PairRejectedMessage,
+  type PairingBinding,
   type ProtectedMacInput,
   type ProtectedMessage,
   type ProtocolMessage,
@@ -30,8 +32,10 @@ import {
   createNonce,
   deriveSessionHmacKey,
   hmacSha256Bytes,
+  hmacSha256TextKey,
   signWithKey,
   verifyHmacSha256,
+  verifyHmacSha256TextKey,
   verifyWithKey
 } from "./crypto";
 import {
@@ -52,6 +56,13 @@ interface AuthAttempt {
   binding?: AuthBinding;
   readonly clientNonce: string;
   readonly token: string;
+}
+
+interface PairingAttempt {
+  binding: PairingBinding | undefined;
+  challengePending: boolean;
+  clientNonce: string;
+  readonly key: string;
 }
 
 interface AuthenticatedSession {
@@ -80,7 +91,7 @@ export class BridgeClient {
   #connection: PublicBridgeStatus["connection"] = "disconnected";
   #authentication: PublicBridgeStatus["authentication"] = "unpaired";
   #problem: BridgeProblem | undefined;
-  #pendingPairingCode: string | undefined;
+  #pairingAttempt: PairingAttempt | undefined;
   #pairingGeneration = 0;
   #permissionCheckGeneration = 0;
   #pairingCommitGeneration: number | undefined;
@@ -139,14 +150,19 @@ export class BridgeClient {
 
     this.#settlePairWaiter(false);
     this.#pairingGeneration += 1;
-    this.#pendingPairingCode = code;
+    this.#pairingAttempt = {
+      binding: undefined,
+      challengePending: false,
+      clientNonce: createNonce(),
+      key: code
+    };
     this.#problem = undefined;
     this.#authentication = "pairing";
     this.#suppressReconnect = false;
     const outcome = new Promise<boolean>((resolve) => {
       const timer = setTimeout(() => {
-        if (this.#pendingPairingCode !== undefined) {
-          this.#pendingPairingCode = undefined;
+        if (this.#pairingAttempt !== undefined) {
+          this.#pairingAttempt = undefined;
           this.#authentication = "rejected";
           this.#problem = "bridge_unavailable";
           this.#suppressReconnect = true;
@@ -170,7 +186,7 @@ export class BridgeClient {
 
       this.#settings = candidate;
       this.#pairingGeneration += 1;
-      this.#pendingPairingCode = undefined;
+      this.#pairingAttempt = undefined;
       this.#authAttempt = undefined;
       this.#session = undefined;
       this.#authentication = "unpaired";
@@ -214,7 +230,7 @@ export class BridgeClient {
     }
 
     this.#permissionCheckGeneration += 1;
-    this.#pendingPairingCode = undefined;
+    this.#pairingAttempt = undefined;
     this.#authentication = "pairing";
     this.#problem = undefined;
     this.#suppressReconnect = false;
@@ -234,7 +250,7 @@ export class BridgeClient {
     }
 
     this.#permissionCheckGeneration += 1;
-    this.#pendingPairingCode = undefined;
+    this.#pairingAttempt = undefined;
     this.#authentication = "rejected";
     this.#problem = "loopback_permission_required";
     this.#suppressReconnect = true;
@@ -271,7 +287,7 @@ export class BridgeClient {
     const permissionCheckGeneration = ++this.#permissionCheckGeneration;
     const token = this.#settings.token;
     if (token === undefined) {
-      if (this.#pendingPairingCode !== undefined) {
+      if (this.#pairingAttempt !== undefined) {
         this.#connect();
       }
       return;
@@ -283,7 +299,7 @@ export class BridgeClient {
       this.#permissionCheckGeneration !== permissionCheckGeneration ||
       this.#settings.token !== token ||
       this.#settings.port !== port ||
-      this.#pendingPairingCode !== undefined
+      this.#pairingAttempt !== undefined
     ) {
       return;
     }
@@ -303,7 +319,7 @@ export class BridgeClient {
   #connect(): void {
     if (
       this.#socket !== undefined ||
-      (this.#settings.token === undefined && this.#pendingPairingCode === undefined)
+      (this.#settings.token === undefined && this.#pairingAttempt === undefined)
     ) {
       return;
     }
@@ -324,7 +340,7 @@ export class BridgeClient {
         : "bridge_unavailable";
       if (loopbackPermissionDenied) {
         this.#authentication = "rejected";
-        this.#pendingPairingCode = undefined;
+        this.#pairingAttempt = undefined;
         this.#suppressReconnect = true;
         this.#settlePairWaiter(false);
       }
@@ -349,11 +365,17 @@ export class BridgeClient {
       this.#connection = "connected";
       this.#problem = undefined;
       this.#notify();
-      if (this.#pendingPairingCode !== undefined) {
+      const pairingAttempt = this.#pairingAttempt;
+      if (pairingAttempt !== undefined) {
+        pairingAttempt.clientNonce = createNonce();
+        pairingAttempt.binding = undefined;
+        pairingAttempt.challengePending = false;
         this.#sendRaw({
           v: PROTOCOL_VERSION,
-          type: "pair.request",
-          code: this.#pendingPairingCode
+          type: "pair.hello",
+          clientNonce: pairingAttempt.clientNonce,
+          origin: `chrome-extension://${chrome.runtime.id}`,
+          role: "extension"
         });
       } else {
         this.#beginAuthentication();
@@ -398,6 +420,10 @@ export class BridgeClient {
     }
 
     const message = parsed.data;
+    if (message.type === "pair.challenge") {
+      await this.#handlePairingChallenge(socket, message);
+      return;
+    }
     if (message.type === "pair.granted" || message.type === "pair.rejected") {
       await this.#handlePairingMessage(socket, message);
       return;
@@ -418,17 +444,79 @@ export class BridgeClient {
     this.#failProtocol(socket);
   }
 
+  async #handlePairingChallenge(
+    socket: WebSocket,
+    message: Extract<ProtocolMessage, { type: "pair.challenge" }>
+  ): Promise<void> {
+    const attempt = this.#pairingAttempt;
+    const expectedOrigin = `chrome-extension://${chrome.runtime.id}`;
+    if (
+      attempt === undefined ||
+      attempt.binding !== undefined ||
+      attempt.challengePending ||
+      message.clientNonce !== attempt.clientNonce ||
+      message.origin !== expectedOrigin ||
+      message.clientRole !== "extension" ||
+      message.serverRole !== "plugin"
+    ) {
+      this.#failProtocol(socket);
+      return;
+    }
+
+    const binding: PairingBinding = {
+      clientNonce: message.clientNonce,
+      serverNonce: message.serverNonce,
+      origin: message.origin,
+      clientRole: message.clientRole,
+      serverRole: message.serverRole
+    };
+    attempt.challengePending = true;
+    const serverIsAuthentic = await verifyHmacSha256TextKey(
+      attempt.key,
+      encodePairingProofInput(binding, "plugin"),
+      message.serverHmac
+    );
+    if (this.#socket !== socket || this.#pairingAttempt !== attempt) {
+      return;
+    }
+    if (!serverIsAuthentic) {
+      this.#rejectPairing(socket, "invalid_pairing_code");
+      return;
+    }
+
+    attempt.binding = binding;
+    attempt.challengePending = false;
+    const clientHmac = await hmacSha256TextKey(
+      attempt.key,
+      encodePairingProofInput(binding, "extension")
+    );
+    if (
+      this.#socket !== socket ||
+      this.#pairingAttempt !== attempt ||
+      attempt.binding !== binding
+    ) {
+      return;
+    }
+    this.#sendRaw({
+      v: PROTOCOL_VERSION,
+      type: "pair.response",
+      ...binding,
+      clientHmac
+    });
+  }
+
   async #handlePairingMessage(
     socket: WebSocket,
     message: Extract<ProtocolMessage, { type: "pair.granted" | "pair.rejected" }>
   ): Promise<void> {
-    if (this.#socket !== socket || this.#pendingPairingCode === undefined) {
+    const pairingAttempt = this.#pairingAttempt;
+    if (this.#socket !== socket || pairingAttempt === undefined) {
       this.#failProtocol(socket);
       return;
     }
 
     if (message.type === "pair.rejected") {
-      this.#pendingPairingCode = undefined;
+      this.#pairingAttempt = undefined;
       this.#authentication = "rejected";
       this.#problem = pairingProblem(message);
       this.#suppressReconnect = true;
@@ -438,13 +526,18 @@ export class BridgeClient {
       return;
     }
 
-    // The peer accepted the one-time code. From here the popup must wait for
+    if (pairingAttempt.binding === undefined) {
+      this.#failProtocol(socket);
+      return;
+    }
+
+    // Both peers proved the one-time key. From here the popup must wait for
     // the durable token commit and mutual-auth result; timing out midway would
     // make chrome.storage.local and the live client disagree.
     this.#clearPairingTimeout();
     const generation = this.#pairingGeneration;
     await this.#runSettingsOperation(async () => {
-      if (this.#socket !== socket || this.#pendingPairingCode === undefined) {
+      if (this.#socket !== socket || this.#pairingAttempt !== pairingAttempt) {
         return;
       }
       const settings: BridgeSettings = { port: this.#settings.port, token: message.token };
@@ -453,7 +546,7 @@ export class BridgeClient {
         await saveBridgeSettings(settings);
       } catch {
         if (this.#pairingGeneration === generation) {
-          this.#pendingPairingCode = undefined;
+          this.#pairingAttempt = undefined;
           this.#authentication = "rejected";
           this.#problem = "bridge_unavailable";
           this.#suppressReconnect = true;
@@ -474,7 +567,7 @@ export class BridgeClient {
       // Persistence is the commit point. Adopt the granted token even if the
       // granting socket closed while chrome.storage.local was pending.
       this.#settings = settings;
-      this.#pendingPairingCode = undefined;
+      this.#pairingAttempt = undefined;
       this.#authentication = "pairing";
       this.#problem = undefined;
       this.#suppressReconnect = false;
@@ -486,6 +579,19 @@ export class BridgeClient {
         this.#notify();
       }
     });
+  }
+
+  #rejectPairing(socket: WebSocket, problem: BridgeProblem): void {
+    if (this.#socket !== socket) {
+      return;
+    }
+    this.#pairingAttempt = undefined;
+    this.#authentication = "rejected";
+    this.#problem = problem;
+    this.#suppressReconnect = true;
+    this.#settlePairWaiter(false);
+    this.#disconnect(1008, "pairing authentication failed");
+    this.#notify();
   }
 
   #beginAuthentication(): void {
@@ -811,6 +917,8 @@ export class BridgeClient {
     if (socket === undefined || this.#socket !== socket) {
       return;
     }
+    this.#pairingAttempt = undefined;
+    this.#authentication = "rejected";
     this.#problem = "protocol_error";
     this.#suppressReconnect = true;
     this.#settlePairWaiter(false);
@@ -842,7 +950,7 @@ export class BridgeClient {
     if (
       this.#suppressReconnect ||
       this.#reconnectTimer !== undefined ||
-      (this.#settings.token === undefined && this.#pendingPairingCode === undefined)
+      (this.#settings.token === undefined && this.#pairingAttempt === undefined)
     ) {
       return;
     }

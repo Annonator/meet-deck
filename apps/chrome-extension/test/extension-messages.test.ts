@@ -15,10 +15,10 @@ const STATUS = {
 } as const;
 
 describe("extension UI message validation", () => {
-  it("normalises only eight-digit pairing codes", () => {
-    expect(normalizePairingCode("1234-5678")).toBe("12345678");
-    expect(normalizePairingCode("1234 5678")).toBe("12345678");
-    expect(normalizePairingCode("1234567a")).toBeUndefined();
+  it("normalises only 25-character human-readable pairing keys", () => {
+    expect(normalizePairingCode("23456-789AB-CDEFG-HJKLM-NPQRS")).toBe("23456789ABCDEFGHJKLMNPQRS");
+    expect(normalizePairingCode("23456 789ab cdefg hjklm npqrs")).toBe("23456789ABCDEFGHJKLMNPQRS");
+    expect(normalizePairingCode("23456789ABCDEFGHJKLMNPQR0")).toBeUndefined();
   });
 
   it("rejects unknown keys and unsafe bridge ports", () => {

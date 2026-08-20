@@ -107,8 +107,8 @@ export function isPublicBridgeStatus(value: unknown): value is PublicBridgeStatu
 }
 
 export function normalizePairingCode(value: string): string | undefined {
-  const compact = value.replace(/[\s-]/gu, "");
-  return /^\d{8}$/u.test(compact) ? compact : undefined;
+  const compact = value.replace(/[\s-]/gu, "").toUpperCase();
+  return /^[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{25}$/u.test(compact) ? compact : undefined;
 }
 
 export function isBridgePort(value: unknown): value is number {

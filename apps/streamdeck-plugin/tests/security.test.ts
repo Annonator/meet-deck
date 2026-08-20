@@ -5,6 +5,7 @@ import {
   PAIRING_TTL_MS,
   PairingManager,
   createMac,
+  createPairingProof,
   createProof,
   deriveSessionKey,
   isBase64Url256,
@@ -16,6 +17,7 @@ import {
 import {
   encodeProtectedMessageMacInput,
   type AuthBinding,
+  type PairingBinding,
   type ProtectedMacInput
 } from "@meet-deck/protocol";
 
@@ -27,25 +29,48 @@ const binding: AuthBinding = {
   clientRole: "extension",
   serverRole: "plugin"
 };
+const pairingBinding: PairingBinding = {
+  clientNonce: binding.clientNonce,
+  serverNonce: binding.serverNonce,
+  origin: binding.origin,
+  clientRole: "extension",
+  serverRole: "plugin"
+};
+const pairingKey = "23456789ABCDEFGHJKLMNPQRS";
 
 describe("PairingManager", () => {
-  it("creates a one-use eight-digit code and a 256-bit token", () => {
+  it("creates a one-use high-entropy key and a 256-bit token", () => {
     const manager = new PairingManager({
-      code: () => "01234567",
+      key: () => pairingKey,
       token: () => "T".repeat(43)
     });
     const opened = manager.start(1_000);
 
     expect(opened).toEqual({
-      code: "01234567",
+      code: pairingKey,
       expiresAt: 1_000 + PAIRING_TTL_MS,
       attemptsRemaining: MAX_PAIRING_ATTEMPTS
     });
-    expect(manager.attempt("01234567", 1_001)).toEqual({
+    expect(manager.createProof(pairingBinding, "plugin", 1_001)).toBe(
+      createPairingProof(pairingKey, pairingBinding, "plugin")
+    );
+    expect(
+      manager.attemptProof(
+        pairingBinding,
+        createPairingProof(pairingKey, pairingBinding, "extension"),
+        1_001
+      )
+    ).toEqual({
       ok: true,
       token: "T".repeat(43)
     });
-    expect(manager.attempt("01234567", 1_002)).toEqual({
+    expect(
+      manager.attemptProof(
+        pairingBinding,
+        createPairingProof(pairingKey, pairingBinding, "extension"),
+        1_002
+      )
+    ).toEqual({
       ok: false,
       reason: "pairing_closed"
     });
@@ -53,18 +78,30 @@ describe("PairingManager", () => {
 
   it("locks the window on the fifth bad attempt", () => {
     const manager = new PairingManager({
-      code: () => "12345678",
+      key: () => pairingKey,
       token: () => "T".repeat(43)
     });
     manager.start(0);
 
     for (let attempt = 1; attempt < MAX_PAIRING_ATTEMPTS; attempt += 1) {
-      expect(manager.attempt("00000000", attempt)).toEqual({
+      expect(
+        manager.attemptProof(
+          pairingBinding,
+          createPairingProof("QRSTUVWXYZ23456789ABCDEFG", pairingBinding, "extension"),
+          attempt
+        )
+      ).toEqual({
         ok: false,
         reason: "invalid_code"
       });
     }
-    expect(manager.attempt("00000000", MAX_PAIRING_ATTEMPTS)).toEqual({
+    expect(
+      manager.attemptProof(
+        pairingBinding,
+        createPairingProof("QRSTUVWXYZ23456789ABCDEFG", pairingBinding, "extension"),
+        MAX_PAIRING_ATTEMPTS
+      )
+    ).toEqual({
       ok: false,
       reason: "rate_limited"
     });
@@ -73,12 +110,18 @@ describe("PairingManager", () => {
 
   it("rejects an expired code", () => {
     const manager = new PairingManager({
-      code: () => "12345678",
+      key: () => pairingKey,
       token: () => "T".repeat(43)
     });
     manager.start(500);
 
-    expect(manager.attempt("12345678", 500 + PAIRING_TTL_MS)).toEqual({
+    expect(
+      manager.attemptProof(
+        pairingBinding,
+        createPairingProof(pairingKey, pairingBinding, "extension"),
+        500 + PAIRING_TTL_MS
+      )
+    ).toEqual({
       ok: false,
       reason: "expired_code"
     });

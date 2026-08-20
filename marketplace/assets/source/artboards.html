@@ -628,7 +628,7 @@
         background: #353021;
         color: #ffe29b;
         font-family: "Courier New", monospace;
-        font-size: 24px;
+        font-size: 15px;
         font-weight: 800;
         letter-spacing: 0.16em;
         text-align: center;
@@ -998,7 +998,9 @@
       <header class="gallery-heading">
         <span class="eyebrow">Companion connection</span>
         <h1>One-time pairing. Local connection.</h1>
-        <p>A short-lived code pairs the plugin with the required Chrome companion on this Mac.</p>
+        <p>
+          A short-lived key authenticates the plugin to the required Chrome companion on this Mac.
+        </p>
       </header>
       <section class="pairing-flow">
         <article class="pair-step">
@@ -1013,7 +1015,7 @@
         </article>
         <article class="pair-step">
           <span class="step-kicker"><span class="step-number">2</span>Start pairing</span>
-          <h2>Use the short-lived code</h2>
+          <h2>Use the short-lived key</h2>
           <div
             class="pi-window"
             aria-label="Illustration based on the real English property inspector"
@@ -1024,19 +1026,19 @@
                 <span class="pi-status-dot"></span>
                 <div>
                   <strong>Pairing open</strong
-                  ><span>Enter the one-time code in the Chrome extension.</span>
+                  ><span>Enter the one-time key in the Chrome extension.</span>
                 </div>
               </div>
               <div class="pi-section-label">Chrome extension</div>
-              <div class="pair-code">48271953</div>
-              <div class="pi-footnote">Illustrative code · expires after two minutes</div>
+              <div class="pair-code">23456-789AB-CDEFG-HJKLM-NPQRS</div>
+              <div class="pi-footnote">Illustrative key · expires after two minutes</div>
             </div>
           </div>
         </article>
         <article class="pair-step">
           <span class="step-kicker"><span class="step-number">3</span>Connect Chrome</span>
-          <h2>Enter the same code</h2>
-          <p>The companion extension completes authenticated pairing without a cloud relay.</p>
+          <h2>Enter the same key</h2>
+          <p>The companion verifies the plugin before accepting a credential. No cloud relay.</p>
           <div
             class="companion-card"
             aria-label="Conceptual companion extension graphic, not a screenshot"

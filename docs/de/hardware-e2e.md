@@ -23,16 +23,19 @@ Freigabeinhalte enthalten.
 1. Alte Installation entfernen/entkoppeln, Kandidatenartefakte installieren und Checksummen prüfen.
 2. Vier LCD-Aktionen anlegen. Offline-/ungekoppelten Zustand prüfen; Tastendrücke dürfen keine
    Browseraktion auslösen.
-3. Pairing öffnen: exakt acht Stellen, Ablauf nach zwei Minuten und Ablehnung danach prüfen.
-4. Fünf falsche Codes senden: Pairing muss schließen/drosseln und nur bewusst wieder geöffnet werden
-   können.
+3. Pairing öffnen: exakt 25 Zeichen aus dem dokumentierten eindeutigen Alphabet, Ablauf nach zwei
+   Minuten und Ablehnung danach prüfen.
+4. Mit dem lokalen Protokoll-Harness fünf ungültige Client-Nachweise senden: Pairing muss
+   schließen/drosseln und nur bewusst wieder geöffnet werden können. Außerdem prüfen, dass ein
+   feindlicher Server-Nachweis abgelehnt wird, bevor die Erweiterung ihren Nachweis sendet oder ein
+   Token speichert.
 5. Die erstmalige Ablehnung in einem sauberen Chrome-Profil/einer frischen Installation oder mit
-   einem noch nie genehmigten gültigen Testport prüfen. Neues Pairingfenster öffnen, Code eingeben,
-   **Koppeln und verbinden** wählen und Chromes Abfrage für `ws://127.0.0.1:<konfigurierter Port>/*`
-   ablehnen. Das Pairing darf nicht abgeschlossen werden; die Erweiterung muss ohne
-   Reconnect-Schleife oder Remote-Verbindung offline bleiben. Diesen Fall nicht durch Entfernen
-   einer früher genehmigten optionalen Freigabe erzeugen: Chrome kann sie ohne Abfrage
-   wiederherstellen.
+   einem noch nie genehmigten gültigen Testport prüfen. Neues Pairingfenster öffnen, Schlüssel
+   eingeben, **Koppeln und verbinden** wählen und Chromes Abfrage für
+   `ws://127.0.0.1:<konfigurierter Port>/*` ablehnen. Das Pairing darf nicht abgeschlossen werden;
+   die Erweiterung muss ohne Reconnect-Schleife oder Remote-Verbindung offline bleiben. Diesen Fall
+   nicht durch Entfernen einer früher genehmigten optionalen Freigabe erzeugen: Chrome kann sie ohne
+   Abfrage wiederherstellen.
 6. Pairing gegebenenfalls erneut öffnen, **Koppeln und verbinden** wählen und das exakte
    Port-Match-Pattern erlauben. Beidseitig **Verbunden** prüfen. Die Freigabe darf weder
    Wildcard-Schema/-Host/-Port noch LAN, `localhost` oder alle URLs umfassen. Der WebSocket

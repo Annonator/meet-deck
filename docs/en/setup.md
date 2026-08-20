@@ -46,8 +46,9 @@ release and press **Reload** on `chrome://extensions`.
 1. Select any Meet Deck action in the Stream Deck app to open its property inspector.
 2. Keep the default `127.0.0.1:53421` endpoint unless the port is already used. If it is changed,
    enter the same port in the extension popup.
-3. Choose **Start pairing**. An eight-digit code is shown for two minutes.
-4. Open the Meet Deck Chrome toolbar popup, enter the code, and choose **Pair and connect**. For a
+3. Choose **Start pairing**. A 25-character one-time key is shown for two minutes. Pairing remains
+   unavailable if the configured port is already occupied.
+4. Open the Meet Deck Chrome toolbar popup, enter the key, and choose **Pair and connect**. For a
    stored pairing, choose **Connect**. Either clear user gesture lets the extension request only the
    displayed configured loopback origin.
 5. If Chrome asks, approve the exact host match pattern `ws://127.0.0.1:<configured port>/*`. Denial
@@ -56,7 +57,7 @@ release and press **Reload** on `chrome://extensions`.
 6. Confirm that both UI surfaces show **Connected**.
 
 Pairing one Chrome profile replaces the prior profile. Reinstalling either side or clearing
-extension storage requires pairing again. Never share a pairing code; it grants local control during
+extension storage requires pairing again. Never share a pairing key; it grants local control during
 its short validity window.
 
 Revoking the loopback host grant later stops new connections and reconnects. Choose **Pair and

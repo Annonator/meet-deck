@@ -158,9 +158,9 @@ input:focus {
 
 #pair-code {
   text-align: center;
-  font-size: 20px;
+  font-size: 14px;
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.08em;
 }
 
 .button {

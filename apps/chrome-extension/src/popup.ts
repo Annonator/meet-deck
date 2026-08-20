@@ -79,7 +79,7 @@ async function pair(): Promise<void> {
     showError(
       message(
         "error_invalid_pairing_code",
-        "Enter the eight-digit code from the Stream Deck Property Inspector."
+        "Enter the 25-character pairing key from the Stream Deck Property Inspector."
       )
     );
     pairInput.focus();
@@ -315,7 +315,10 @@ function problemText(problem: BridgeProblem): string {
         "The local bridge is unavailable. Is the Stream Deck app running?"
       );
     case "invalid_pairing_code":
-      return message("problem_invalid_pairing_code", "The pairing code is invalid.");
+      return message(
+        "problem_invalid_pairing_code",
+        "The pairing key is invalid or the local peer is not the Meet Deck plugin."
+      );
     case "loopback_permission_denied":
       return message(
         "problem_loopback_permission_denied",
@@ -329,7 +332,7 @@ function problemText(problem: BridgeProblem): string {
     case "pairing_expired":
       return message(
         "problem_pairing_expired",
-        "The pairing code has expired. Generate a new one in the Property Inspector."
+        "The pairing key has expired. Generate a new one in the Property Inspector."
       );
     case "protocol_error":
       return message(
@@ -344,7 +347,7 @@ function extensionErrorText(error: ExtensionError): string {
     case "not_paired":
       return message(
         "error_not_paired",
-        "Meet Deck is not paired yet. Open pairing in Stream Deck and enter the displayed code."
+        "Meet Deck is not paired yet. Open pairing in Stream Deck and enter the displayed key."
       );
     case "request_failed":
       return message("error_request_failed", "The local extension request failed.");

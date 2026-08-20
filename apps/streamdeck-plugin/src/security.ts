@@ -2,10 +2,13 @@ import { createHmac, hkdfSync, randomBytes, randomInt, timingSafeEqual } from "n
 
 import {
   encodeAuthProofInput,
+  encodePairingProofInput,
   encodeSessionKeyInfo,
   encodeSessionKeySalt,
+  PAIRING_KEY_LENGTH,
   type AuthBinding,
   type AuthRole,
+  type PairingBinding,
   type PairRejectionReason,
   type TransportDirection
 } from "@meet-deck/protocol";
@@ -33,20 +36,20 @@ interface PairingWindow {
 }
 
 interface PairingRandomSource {
-  code(): string;
+  key(): string;
   token(): string;
 }
 
+const PAIRING_KEY_ALPHABET = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
+
 const securePairingRandom: PairingRandomSource = {
-  code: () => randomInt(0, 100_000_000).toString().padStart(8, "0"),
+  key: () =>
+    Array.from(
+      { length: PAIRING_KEY_LENGTH },
+      () => PAIRING_KEY_ALPHABET[randomInt(0, PAIRING_KEY_ALPHABET.length)]
+    ).join(""),
   token: () => randomBytes(32).toString("base64url")
 };
-
-function constantTimeTextEquals(left: string, right: string): boolean {
-  const leftBytes = Buffer.from(left, "utf8");
-  const rightBytes = Buffer.from(right, "utf8");
-  return leftBytes.length === rightBytes.length && timingSafeEqual(leftBytes, rightBytes);
-}
 
 export class PairingManager {
   readonly #random: PairingRandomSource;
@@ -58,7 +61,7 @@ export class PairingManager {
 
   start(now = Date.now()): PairingSnapshot {
     this.#window = {
-      code: this.#random.code(),
+      code: this.#random.key(),
       expiresAt: now + PAIRING_TTL_MS,
       attempts: 0
     };
@@ -85,7 +88,15 @@ export class PairingManager {
     };
   }
 
-  attempt(code: string, now = Date.now()): PairingAttempt {
+  createProof(binding: PairingBinding, role: AuthRole, now = Date.now()): string | undefined {
+    const window = this.#window;
+    if (window === undefined || now >= window.expiresAt) {
+      return undefined;
+    }
+    return createPairingProof(window.code, binding, role);
+  }
+
+  attemptProof(binding: PairingBinding, proof: string, now = Date.now()): PairingAttempt {
     const window = this.#window;
     if (window === undefined) {
       return { ok: false, reason: "pairing_closed" };
@@ -98,7 +109,7 @@ export class PairingManager {
       this.#window = undefined;
       return { ok: false, reason: "rate_limited" };
     }
-    if (!constantTimeTextEquals(code, window.code)) {
+    if (!verifyPairingProof(window.code, binding, "extension", proof)) {
       window.attempts += 1;
       if (window.attempts >= MAX_PAIRING_ATTEMPTS) {
         this.#window = undefined;
@@ -111,6 +122,27 @@ export class PairingManager {
     this.#window = undefined;
     return { ok: true, token };
   }
+}
+
+export function createPairingProof(
+  pairingKey: string,
+  binding: PairingBinding,
+  role: AuthRole
+): string {
+  return createHmac("sha256", Buffer.from(pairingKey, "utf8"))
+    .update(encodePairingProofInput(binding, role))
+    .digest("base64url");
+}
+
+export function verifyPairingProof(
+  pairingKey: string,
+  binding: PairingBinding,
+  role: AuthRole,
+  proof: string
+): boolean {
+  const expected = Buffer.from(createPairingProof(pairingKey, binding, role), "base64url");
+  const actual = Buffer.from(proof, "base64url");
+  return expected.length === actual.length && timingSafeEqual(expected, actual);
 }
 
 export function sanitizeBridgePort(value: unknown): number | undefined {

@@ -65,7 +65,7 @@ describe("popup pairing and loopback permission flow", () => {
     await import("../src/popup");
     await waitForInitialStatus();
 
-    submitPairing("12345678");
+    submitPairing("23456789ABCDEFGHJKLMNPQRS");
 
     expect(permissionRequest).toHaveBeenCalledOnce();
     await vi.waitFor(() => expect(permissionRequest).toHaveBeenCalledOnce());
@@ -82,7 +82,7 @@ describe("popup pairing and loopback permission flow", () => {
     expect(popupCss).toMatch(/\[hidden\]\s*\{[^}]*display:\s*none\s*!important;/u);
   });
 
-  it("saves the exact granted port before sending the pairing code", async () => {
+  it("saves the exact granted port before sending the pairing key", async () => {
     permissionRequest.mockResolvedValueOnce(true);
     sendMessage.mockImplementation(async (request: ExtensionRequest) => {
       switch (request.kind) {
@@ -107,14 +107,14 @@ describe("popup pairing and loopback permission flow", () => {
     await import("../src/popup");
     await waitForInitialStatus();
 
-    submitPairing("1234-5678");
+    submitPairing("23456-789AB-CDEFG-HJKLM-NPQRS");
 
     expect(permissionRequest).toHaveBeenCalledOnce();
     await vi.waitFor(() =>
       expect(sentRequests()).toEqual([
         { kind: "bridge.status.get" },
         { kind: "bridge.port.set", port: 53_421 },
-        { code: "12345678", kind: "bridge.pair" }
+        { code: "23456789ABCDEFGHJKLMNPQRS", kind: "bridge.pair" }
       ])
     );
     expect(permissionRequest.mock.invocationCallOrder[0]).toBeLessThan(

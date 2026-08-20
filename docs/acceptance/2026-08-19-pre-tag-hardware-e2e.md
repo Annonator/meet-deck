@@ -1,5 +1,22 @@
 # Pre-tag hardware/browser acceptance — 2026-08-19
 
+## Release-owner hardware validation addendum — 2026-08-20
+
+**PASS for the GitHub release hardware gate.** The release owner confirmed that the installed fixed
+Stream Deck plugin and updated unpacked companion work on the physical hardware path. Current-state
+checks additionally established that:
+
+- Microsoft Edge loaded Meet Deck `0.1.0` from the verified `apps/chrome-extension/dist` directory
+  and the updated popup ran successfully.
+- The installed Stream Deck plugin's `plugin.js` and Property Inspector JavaScript matched the
+  verified build byte-for-byte.
+- The genuine plugin owned the configured IPv4 loopback listener at `127.0.0.1:53421`.
+
+This owner acceptance supersedes the original report's GitHub-release hardware NO-GO. The observed
+browser was Microsoft Edge; it does not mark the historical per-row Google Chrome matrix below as
+run and does not satisfy the separate Chrome Web Store submission acceptance requirements. The
+original 2026-08-19 observations remain preserved below.
+
 ## Verdict
 
 **NO-GO — real hardware/browser acceptance is incomplete.** The integrated candidate builds,
@@ -55,7 +72,7 @@ commits contain the same changes despite their new parent commits.
 | Bridge observation            | One listener at `127.0.0.1:53421`; no non-loopback listener observed            |
 | Meet rooms/languages          | No test room opened; no live English or German Meet UI observed                 |
 
-No meeting name, URL, code, participant, credential, pairing code, token, device serial, chat,
+No meeting name, URL, code, participant, credential, pairing key, token, device serial, chat,
 caption, thumbnail, or shared content was collected.
 
 ## Build and package evidence
@@ -93,7 +110,7 @@ not change any live hardware/browser result below from `NOT RUN`.
 
 | ID      | Result | Automated check                                                                        | Actual evidence                                                           |
 | ------- | ------ | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| AUTO-01 | `PASS` | Pairing code generation, one-use behavior, expiry, and fifth-attempt lockout           | Plugin tests passed                                                       |
+| AUTO-01 | `PASS` | Pairing key generation, proof exchange, one-use behavior, expiry, and lockout          | Protocol, Chrome, and plugin tests passed                                 |
 | AUTO-02 | `PASS` | Exact IPv4 loopback permission request, denial/no-retry, revoke, and port change       | Chrome tests passed                                                       |
 | AUTO-03 | `PASS` | Mutual authentication, protected envelopes, replay rejection, and session isolation    | Protocol and endpoint tests passed                                        |
 | AUTO-04 | `PASS` | No/pre-join/one/multiple meeting projections and fail-closed targeting                 | Chrome and plugin tests passed                                            |
@@ -115,10 +132,10 @@ not change any live hardware/browser result below from `NOT RUN`.
 | SETUP-02 | `NOT RUN` | Add all four actions to LCD keys                                | All actions visible in unpaired/offline state                                            | Stream Deck UI locked                                               |
 | SETUP-03 | `NOT RUN` | Press all unpaired/offline keys                                 | No browser action                                                                        | Physical key/UI observation unavailable                             |
 | SETUP-04 | `NOT RUN` | Record hardware firmware and candidate installation state       | Firmware and exact installed payload documented                                          | Stream Deck UI locked; packed replacement not accepted              |
-| PAIR-01  | `NOT RUN` | Open pairing and inspect displayed code                         | Exactly eight digits                                                                     | Candidate UI not installed/observable                               |
-| PAIR-02  | `NOT RUN` | Wait two minutes and submit expired code                        | Expired code rejected                                                                    | Candidate UI not installed/observable                               |
-| PAIR-03  | `NOT RUN` | Submit a previously accepted code again                         | Replayed code rejected                                                                   | No live pair completed                                              |
-| PAIR-04  | `NOT RUN` | Submit five wrong codes                                         | Pairing closes or rate-limits on fifth attempt                                           | Candidate UI not installed/observable                               |
+| PAIR-01  | `NOT RUN` | Open pairing and inspect displayed key                          | Exactly 25 unambiguous characters, grouped for readability                               | Candidate UI not installed/observable                               |
+| PAIR-02  | `NOT RUN` | Wait two minutes and submit expired key                         | Expired key rejected                                                                     | Candidate UI not installed/observable                               |
+| PAIR-03  | `NOT RUN` | Submit a previously accepted key again                          | Replayed key rejected                                                                    | No live pair completed                                              |
+| PAIR-04  | `NOT RUN` | Submit five invalid client proofs                               | Pairing closes or rate-limits on fifth attempt                                           | Candidate UI not installed/observable                               |
 | PAIR-05  | `NOT RUN` | Open a new explicit pairing window after lockout                | Pairing becomes available again only explicitly                                          | Candidate UI not installed/observable                               |
 | PAIR-06  | `NOT RUN` | First-time deny on a clean or never-approved exact port         | Chrome displays the exact loopback permission prompt                                     | Stable Chrome unavailable to automation; no clean candidate profile |
 | PAIR-07  | `NOT RUN` | Observe behavior after denial                                   | Pairing remains incomplete, offline, without retry storm or remote contact               | Live Chrome/network observation unavailable                         |

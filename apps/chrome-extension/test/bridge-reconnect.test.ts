@@ -155,7 +155,7 @@ describe("BridgeClient reconnect invariants", () => {
     const bridge = createBridge({ onStatusChange });
 
     await bridge.start();
-    await expect(bridge.pair("12345678")).resolves.toBe(false);
+    await expect(bridge.pair("23456789ABCDEFGHJKLMNPQRS")).resolves.toBe(false);
     expect(bridge.status("none")).toMatchObject({
       authentication: "rejected",
       connection: "disconnected",

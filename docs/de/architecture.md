@@ -91,20 +91,23 @@ nach Meet-SPA-Navigation neu.
 Das Plugin lauscht ausschließlich auf `127.0.0.1`, standardmäßig Port `53421`. `0.0.0.0`, LAN- und
 öffentliche Adressen sind verboten.
 
-Kopplung ist standardmäßig geschlossen. Der Property Inspector öffnet ein zweiminütiges Fenster und
-zeigt einen achtstelligen Einmalcode. Nach Eingabe im Extension-Popup stellt das Plugin ein
-zufälliges 256-Bit-Token aus. Spätere Verbindungen tauschen frische Client-/Server-Nonces aus und
-binden den HMAC-SHA-256-Nachweis an zufällige Sitzung, konkrete `chrome-extension://…`-Origin und
-die Rollen Extension/Plugin. Auch das Plugin weist der Erweiterung Tokenbesitz nach. Eine neue
-Kopplung ersetzt das zuvor gekoppelte Chrome-Profil. Nach fünf Fehlversuchen muss das Fenster
-bewusst neu geöffnet werden.
+Kopplung ist standardmäßig geschlossen und kann nur geöffnet werden, solange das echte Plugin den
+konfigurierten Listener besitzt. Der Property Inspector öffnet ein zweiminütiges Fenster und zeigt
+einen zufälligen 125-Bit-Einmalschlüssel mit 25 Zeichen. Nach Eingabe im Extension-Popup sendet die
+Erweiterung nur eine frische Nonce und ihre Origin. Das Plugin weist den Schlüssel über beide
+Nonces, Origin und feste Rollen nach; erst nach erfolgreicher Prüfung sendet die Erweiterung ihren
+getrennten Nachweis. Der Schlüssel selbst wird nie über den WebSocket gesendet. Danach stellt das
+Plugin ein zufälliges 256-Bit-Token aus. Spätere Verbindungen binden frische Client-/Server-Nonces,
+eine zufällige Sitzung, die exakte `chrome-extension://…`-Origin und die Rollen Extension/Plugin in
+HMAC-SHA-256-Nachweise. Eine neue Kopplung ersetzt das zuvor gekoppelte Chrome-Profil. Nach fünf
+ungültigen Client-Nachweisen muss das Fenster bewusst neu geöffnet werden.
 
 Nach Authentifizierung liegt jede Anwendungsnachricht in einem geschützten Envelope (`protected`)
 mit Sitzung, Richtung, strikt steigender Sequenz je Richtung und MAC. Befehle laufen
 Plugin→Extension, Zustände/Ergebnisse Extension→Plugin. Nonces und Sequenzen schützen vor Replay.
 Ungültige, zu große, falsch gerichtete, unbekannt versionierte oder strukturell unerwartete
-Nachrichten werden verworfen. Token, Pairingcode, Authentifizierungsnachweise und Frame-MACs dürfen
-nie geloggt werden.
+Nachrichten werden verworfen. Token, Pairingschlüssel, Authentifizierungsnachweise und Frame-MACs
+dürfen nie geloggt werden.
 
 Ein MV3-Service-Worker darf pausiert werden. Heartbeat und begrenztes exponentielles Reconnect
 stellen die Sitzung wieder her, ohne Authentifizierung zu umgehen. Vor einem Pairing- oder

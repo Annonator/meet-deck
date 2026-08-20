@@ -1,5 +1,44 @@
 # Meet Deck pre-tag report
 
+## Post-report security remediation — 2026-08-20
+
+- **Current GitHub release decision:** GO
+- **Chrome Web Store / Elgato Marketplace submission decision:** NO-GO until their separately listed
+  submission requirements are complete
+
+`MD-PAIR-001` is remediated in the current working tree. Pairing now uses a 125-bit, short-lived key
+that never crosses the WebSocket. The plugin and Chrome companion exchange role-separated HMAC
+proofs over fresh nonces and the exact extension origin before the plugin issues a credential. The
+companion rejects an unproved local peer without sending its proof or storing the peer's token. The
+plugin also refuses to open or display pairing unless its genuine loopback listener is active, and
+the property inspector disables pairing while the listener is unavailable.
+
+Current automated and package evidence:
+
+- `npm run check`: PASS — formatting, lint, release metadata, both listing validators, typecheck,
+  189 tests, all builds, and Stream Deck validation.
+- Real occupied-port regression: PASS — `EADDRINUSE` remains visible and no pairing key is created.
+- Hostile-loopback regression: PASS — the key is absent from `pair.hello`, an invalid server proof
+  is rejected, no client proof is returned, and no attacker-chosen token is stored.
+- Legitimate pairing/control regression: PASS — mutual pairing proofs, durable token storage, mutual
+  session authentication, protected state, and a protected microphone command still work.
+- `npm run pack` plus checksum, archive-integrity, entry-count, and packed-bundle checks: PASS for
+  the regenerated installable artifacts.
+- Regenerated Chrome ZIP SHA-256:
+  `c40db3b4373422a0d970cd5ae00f4b6a4efc03fa2e116dd5a08480c7b2bf041d`.
+- Regenerated Stream Deck package SHA-256:
+  `f7c93f72dab8adb3d23d4b9b45dac47a803259f2c7a7a72d20ae202266ca5b65`.
+
+The original report below remains a preserved account of the 2026-08-19 candidate and its checksums.
+Its `MD-PAIR-001` finding is superseded by this addendum; its other NO-GO items are not. In
+particular, the separate store-submission requirements remain outstanding.
+
+The release owner confirmed on 2026-08-20 that the installed fixed Stream Deck plugin and updated
+unpacked companion work on the physical hardware path. The installed plugin binary and Property
+Inspector matched the verified build byte-for-byte, and its IPv4 loopback listener was active. The
+observed browser was Microsoft Edge, so this owner acceptance closes the GitHub-release hardware
+gate but does not claim completion of the Google Chrome-specific store acceptance matrix.
+
 - **Decision:** NO-GO
 - **Candidate version:** `0.1.0`
 - **Candidate release-content SHA:** `a24aaff792f87498a803cdd7ce64e4f184ca5642`

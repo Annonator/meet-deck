@@ -28,7 +28,7 @@ npm run store:validate
 Set `CHROME_EXECUTABLE` if Chrome is not installed in a standard macOS or Linux location. The
 generator builds and loads the real compiled popup/onboarding pages, installs only an in-page
 `chrome` API fixture, asserts the expected visible/hidden state, and renders at device scale 1.
-Inputs, locale, timezone, viewport, status, pairing code, and action states are fixed. Chrome's
+Inputs, locale, timezone, viewport, status, pairing key, and action states are fixed. Chrome's
 rasterizer can still produce byte-level differences across browser/platform versions, so review the
 rendered output after regeneration.
 

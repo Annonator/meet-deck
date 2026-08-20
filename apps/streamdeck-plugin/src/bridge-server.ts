@@ -11,6 +11,7 @@ import {
   type AuthBinding,
   type CommandMessage,
   type MeetingStateMessage,
+  type PairingBinding,
   type ProtectedMacInput,
   type ProtectedMessage,
   type ProtocolMessage,
@@ -76,13 +77,15 @@ export interface BridgeServerOptions {
 
 type ApplicationListener = (message: MeetingStateMessage | ResultMessage) => void;
 type StatusListener = (status: BridgeStatus) => void;
-type SocketPhase = "awaiting" | "pairing" | "challenged" | "authenticated" | "invalidated";
+type SocketPhase =
+  "awaiting" | "pairing_challenged" | "pairing" | "challenged" | "authenticated" | "invalidated";
 
 interface SocketState {
   readonly socket: WebSocket;
   readonly origin: string;
   readonly replayGuard: ProtectedMessageReplayGuard;
   phase: SocketPhase;
+  pairingBinding: PairingBinding | undefined;
   binding: AuthBinding | undefined;
   inboundKey: Buffer | undefined;
   outboundKey: Buffer | undefined;
@@ -136,6 +139,16 @@ export function isUpgradeAllowed(request: IncomingMessage, policy: UpgradePolicy
 function bindingsEqual(left: AuthBinding, right: AuthBinding): boolean {
   return (
     left.session === right.session &&
+    left.clientNonce === right.clientNonce &&
+    left.serverNonce === right.serverNonce &&
+    left.origin === right.origin &&
+    left.clientRole === right.clientRole &&
+    left.serverRole === right.serverRole
+  );
+}
+
+function pairingBindingsEqual(left: PairingBinding, right: PairingBinding): boolean {
+  return (
     left.clientNonce === right.clientNonce &&
     left.serverNonce === right.serverNonce &&
     left.origin === right.origin &&
@@ -285,8 +298,20 @@ export class BridgeServer {
 
     this.#server = server;
     server.on("error", () => {
+      if (this.#server !== server) {
+        return;
+      }
+      this.#server = undefined;
+      this.#invalidatePairingAttempt(1011, "Bridge listener failed");
+      this.#clearPairingWindow();
+      for (const connection of this.#connections.values()) {
+        this.#invalidateConnection(connection, 1011, "Bridge listener failed", false);
+      }
+      this.#connections.clear();
+      this.#active = undefined;
       this.#lastError = "The local bridge encountered an error.";
       this.#logger.error("Meet Deck bridge encountered a server error.");
+      server.close(() => undefined);
       this.#emitStatus();
     });
     this.#logger.info(`Meet Deck bridge listening on ${BRIDGE_HOST}:${port}.`);
@@ -316,6 +341,12 @@ export class BridgeServer {
   }
 
   startPairing(): BridgeStatus {
+    if (this.#server === undefined) {
+      this.#clearPairingWindow();
+      this.#lastError ??= "The local bridge must be listening before pairing can start.";
+      this.#emitStatus();
+      return this.status();
+    }
     if (this.#pairingPersistenceAttempt !== undefined) {
       this.#invalidatePairingAttempt(4001, "Pairing restarted");
       this.#clearPairingWindow();
@@ -399,6 +430,7 @@ export class BridgeServer {
       origin,
       replayGuard: new ProtectedMessageReplayGuard(),
       phase: "awaiting",
+      pairingBinding: undefined,
       binding: undefined,
       inboundKey: undefined,
       outboundKey: undefined,
@@ -454,12 +486,12 @@ export class BridgeServer {
       return;
     }
 
-    if (message.type === "pair.request") {
-      if (state.phase !== "awaiting") {
-        this.#invalidateConnection(state, 1008, "Unexpected pairing request");
-        return;
-      }
-      await this.#onPairRequest(state, message.code);
+    if (message.type === "pair.hello") {
+      this.#onPairHello(state, message);
+      return;
+    }
+    if (message.type === "pair.response") {
+      await this.#onPairResponse(state, message);
       return;
     }
     if (message.type === "auth.hello") {
@@ -473,8 +505,52 @@ export class BridgeServer {
     this.#invalidateConnection(state, 1008, "Unexpected protocol message");
   }
 
-  async #onPairRequest(state: SocketState, code: string): Promise<void> {
-    const attempt = this.#pairing.attempt(code);
+  #onPairHello(state: SocketState, hello: Extract<ProtocolMessage, { type: "pair.hello" }>): void {
+    if (state.phase !== "awaiting" || hello.origin !== state.origin) {
+      this.#invalidateConnection(state, 1008, "Pairing rejected");
+      return;
+    }
+    const binding: PairingBinding = {
+      clientNonce: hello.clientNonce,
+      serverNonce: randomBase64Url(32),
+      origin: state.origin,
+      clientRole: "extension",
+      serverRole: "plugin"
+    };
+    const serverHmac = this.#pairing.createProof(binding, "plugin");
+    if (serverHmac === undefined) {
+      this.#sendRaw(state.socket, {
+        v: PROTOCOL_VERSION,
+        type: "pair.rejected",
+        reason: "pairing_closed"
+      });
+      this.#emitStatus();
+      return;
+    }
+    state.phase = "pairing_challenged";
+    state.pairingBinding = binding;
+    this.#sendRaw(state.socket, {
+      v: PROTOCOL_VERSION,
+      type: "pair.challenge",
+      ...binding,
+      serverHmac
+    });
+  }
+
+  async #onPairResponse(
+    state: SocketState,
+    response: Extract<ProtocolMessage, { type: "pair.response" }>
+  ): Promise<void> {
+    const binding = state.pairingBinding;
+    if (
+      state.phase !== "pairing_challenged" ||
+      binding === undefined ||
+      !pairingBindingsEqual(binding, response)
+    ) {
+      this.#invalidateConnection(state, 1008, "Pairing rejected");
+      return;
+    }
+    const attempt = this.#pairing.attemptProof(binding, response.clientHmac);
     if (!attempt.ok) {
       this.#sendRaw(state.socket, {
         v: PROTOCOL_VERSION,
@@ -484,11 +560,14 @@ export class BridgeServer {
       if (!this.#pairing.isOpen()) {
         this.#clearPairingWindow();
       }
+      state.phase = "awaiting";
+      state.pairingBinding = undefined;
       this.#emitStatus();
       return;
     }
 
     state.phase = "pairing";
+    state.pairingBinding = undefined;
     if (state.authTimer !== undefined) {
       clearTimeout(state.authTimer);
       state.authTimer = undefined;
@@ -785,6 +864,7 @@ export class BridgeServer {
     state.outboundKey?.fill(0);
     state.inboundKey = undefined;
     state.outboundKey = undefined;
+    state.pairingBinding = undefined;
     state.binding = undefined;
     state.replayGuard.clear();
     state.sentSequence = 0;

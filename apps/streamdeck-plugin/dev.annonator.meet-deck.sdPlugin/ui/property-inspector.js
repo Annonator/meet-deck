@@ -49,7 +49,7 @@
 
     const update = () => {
       const seconds = Math.max(0, Math.ceil((expiresAt - Date.now()) / 1000));
-      elements.pairingExpiry.textContent = seconds > 0 ? `Expires in ${seconds}s` : "Code expired";
+      elements.pairingExpiry.textContent = seconds > 0 ? `Expires in ${seconds}s` : "Key expired";
       if (seconds === 0 && countdownTimer) {
         window.clearInterval(countdownTimer);
         countdownTimer = undefined;
@@ -67,9 +67,12 @@
 
     elements.port.value = String(status.port || DEFAULT_PORT);
     elements.pairingCodeWrap.hidden = !status.pairingCode;
-    elements.pairingCode.textContent = status.pairingCode || "—";
+    elements.pairingCode.textContent = status.pairingCode
+      ? status.pairingCode.match(/.{1,5}/g).join("-")
+      : "—";
     elements.cancelPair.hidden = !status.pairingCode;
     elements.pair.hidden = Boolean(status.pairingCode);
+    elements.pair.disabled = !status.listening;
     elements.unpair.hidden = !status.paired;
     setCountdown(status.pairingExpiresAt);
 
@@ -81,7 +84,7 @@
     } else if (status.pairingCode) {
       elements.statusDot.classList.add("pairing");
       elements.statusTitle.textContent = "Pairing open";
-      elements.statusDetail.textContent = "Enter the one-time code in the Chrome extension.";
+      elements.statusDetail.textContent = "Enter the one-time key in the Chrome extension.";
     } else {
       elements.statusDot.classList.add("offline");
       elements.statusTitle.textContent = status.paired
