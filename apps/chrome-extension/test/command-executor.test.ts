@@ -184,6 +184,29 @@ describe("executeMeetCommand", () => {
     ).resolves.toBe("ok");
   });
 
+  it("opens the current presentation status menu before stopping", async () => {
+    const presentationStatus = document.createElement("button");
+    presentationStatus.ariaLabel = "Sie präsentieren";
+    const openMenu = vi.fn(() => {
+      const stop = document.createElement("div");
+      stop.setAttribute("role", "menuitem");
+      stop.ariaLabel = "Präsentation beenden";
+      stop.addEventListener("click", () => {
+        presentationStatus.ariaLabel = "Bildschirm teilen";
+        stop.remove();
+      });
+      document.body.append(stop);
+    });
+    presentationStatus.addEventListener("click", openMenu);
+    document.body.append(presentationStatus);
+
+    await expect(
+      executeMeetCommand({ action: "presentation.stop", id: "presentation-current-menu" })
+    ).resolves.toBe("ok");
+    expect(openMenu).toHaveBeenCalledOnce();
+    expect(document.querySelector('[aria-label="Präsentation beenden"]')).toBeNull();
+  });
+
   it("refuses to act before the user has joined", async () => {
     document.body.innerHTML = '<button aria-label="Turn on microphone"></button>';
 

@@ -14,6 +14,7 @@ type ControlMeaning =
   | "leave"
   | "microphone.disable"
   | "microphone.enable"
+  | "presentation.active"
   | "presentation.start"
   | "presentation.stop";
 
@@ -44,6 +45,12 @@ const LABELS: Readonly<Record<ControlMeaning, readonly string[]>> = Object.freez
     "Jetzt präsentieren",
     "Präsentieren"
   ],
+  "presentation.active": [
+    "You are presenting",
+    "You're presenting",
+    "Sie präsentieren",
+    "Du präsentierst"
+  ],
   "presentation.stop": [
     "Stop presenting",
     "Stop sharing",
@@ -53,7 +60,8 @@ const LABELS: Readonly<Record<ControlMeaning, readonly string[]>> = Object.freez
   ]
 });
 
-const CONTROL_SELECTOR = "button[aria-label], [role='button'][aria-label]";
+const CONTROL_SELECTOR =
+  "button[aria-label], [role='button'][aria-label], [role='menuitem'][aria-label]";
 const SHORTCUT_SUFFIX =
   /^\s*\((?=[^)]*(?:⌘|⌃|⌥|⇧|\b(?:alt|control|ctrl|option|shift|strg|umschalt)\b))[\p{L}\p{N}\s+⌘⌃⌥⇧^.-]{1,40}\)\s*$/iu;
 
@@ -67,6 +75,7 @@ export interface MeetDomSnapshot {
     readonly camera?: MeetControl;
     readonly hand?: MeetControl;
     readonly microphone?: MeetControl;
+    readonly presentationActive?: MeetControl;
     readonly presentationStart?: MeetControl;
     readonly presentationStop?: MeetControl;
   };
@@ -88,6 +97,7 @@ export function inspectMeetDom(root: ParentNode = document): MeetDomSnapshot {
       ...(camera.control === undefined ? {} : { camera: camera.control }),
       ...(hand.control === undefined ? {} : { hand: hand.control }),
       ...(microphone.control === undefined ? {} : { microphone: microphone.control }),
+      ...(presentation.active === undefined ? {} : { presentationActive: presentation.active }),
       ...(presentation.start === undefined ? {} : { presentationStart: presentation.start }),
       ...(presentation.stop === undefined ? {} : { presentationStop: presentation.stop })
     },
@@ -181,20 +191,39 @@ function readHandControl(candidates: readonly HTMLElement[]): {
 }
 
 function readPresentationControl(candidates: readonly HTMLElement[]): {
+  readonly active?: MeetControl;
   readonly start?: MeetControl;
   readonly state: SelfPresentationState;
   readonly stop?: MeetControl;
 } {
+  const active = findControls(candidates, "presentation.active");
   const starting = findControls(candidates, "presentation.start");
   const stopping = findControls(candidates, "presentation.stop");
+  if (active.length > 1) {
+    return { state: "unknown" };
+  }
+
   if (stopping.length === 1) {
     const element = stopping[0];
     return element === undefined
       ? { state: "unknown" }
-      : { state: "active", stop: toControl(element) };
+      : {
+          ...(active[0] === undefined ? {} : { active: toControl(active[0]) }),
+          state: "active",
+          stop: toControl(element)
+        };
   }
 
-  if (stopping.length > 1 || starting.length !== 1) {
+  if (stopping.length > 1) {
+    return { state: "unknown" };
+  }
+
+  const activeElement = active[0];
+  if (activeElement !== undefined) {
+    return { active: toControl(activeElement), state: "active" };
+  }
+
+  if (starting.length !== 1) {
     return { state: "unknown" };
   }
 

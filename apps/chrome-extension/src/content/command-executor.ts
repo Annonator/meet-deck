@@ -171,22 +171,59 @@ async function stopPresentation(
   }
   if (
     initial.state.selfPresentation !== "active" ||
-    initial.controls.presentationStop === undefined
+    (initial.controls.presentationStop === undefined &&
+      initial.controls.presentationActive === undefined)
   ) {
     return "unsupported_ui";
   }
-  if (initial.controls.presentationStop.disabled) {
+  if (
+    initial.controls.presentationStop?.disabled === true ||
+    (initial.controls.presentationStop === undefined &&
+      initial.controls.presentationActive?.disabled === true)
+  ) {
     return "blocked";
   }
 
-  const latest = inspectMeetDom(root);
+  let latest = inspectMeetDom(root);
   if (latest.state.selfPresentation === "inactive") {
     return "noop";
   }
+  if (latest.state.selfPresentation !== "active") {
+    return "unsupported_ui";
+  }
+
+  if (latest.controls.presentationStop === undefined) {
+    if (
+      initial.controls.presentationStop !== undefined ||
+      initial.controls.presentationActive === undefined ||
+      latest.controls.presentationActive === undefined ||
+      latest.controls.presentationActive.element !== initial.controls.presentationActive.element
+    ) {
+      return "unsupported_ui";
+    }
+    if (latest.controls.presentationActive.disabled) {
+      return "blocked";
+    }
+
+    latest.controls.presentationActive.element.click();
+    const stopAppeared = await waitUntil(
+      () => inspectMeetDom(root).controls.presentationStop !== undefined,
+      CONFIRMATION_TIMEOUT_MS
+    );
+    if (!stopAppeared) {
+      return "timeout";
+    }
+    latest = inspectMeetDom(root);
+  } else if (
+    initial.controls.presentationStop === undefined ||
+    latest.controls.presentationStop.element !== initial.controls.presentationStop.element
+  ) {
+    return "unsupported_ui";
+  }
+
   if (
     latest.state.selfPresentation !== "active" ||
-    latest.controls.presentationStop === undefined ||
-    latest.controls.presentationStop.element !== initial.controls.presentationStop.element
+    latest.controls.presentationStop === undefined
   ) {
     return "unsupported_ui";
   }
