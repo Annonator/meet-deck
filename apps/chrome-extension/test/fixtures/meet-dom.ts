@@ -27,3 +27,13 @@ export const CURRENT_GERMAN_JOINED_FIXTURE = `
     <button aria-label="Bildschirm teilen"></button>
   </main>
 `;
+
+export const CURRENT_GERMAN_PRESENTING_FIXTURE = `
+  <main>
+    <button aria-label="Anruf verlassen"></button>
+    <button aria-label="Mikrofon deaktivieren"></button>
+    <button aria-label="Kamera aktivieren"></button>
+    <button aria-label="Melden" aria-pressed="false"></button>
+    <button aria-label="Sie präsentieren"></button>
+  </main>
+`;

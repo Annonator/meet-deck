@@ -6,6 +6,7 @@ import { inspectMeetDom } from "../src/content/dom-adapter";
 import { observeMeetDom } from "../src/content/dom-observer";
 import {
   CURRENT_GERMAN_JOINED_FIXTURE,
+  CURRENT_GERMAN_PRESENTING_FIXTURE,
   ENGLISH_JOINED_FIXTURE,
   GERMAN_PRESENTING_FIXTURE
 } from "./fixtures/meet-dom";
@@ -49,6 +50,37 @@ describe("inspectMeetDom", () => {
       microphone: "on",
       selfPresentation: "inactive"
     });
+  });
+
+  it("recognises the current self-presentation status before its stop menu is open", () => {
+    document.body.innerHTML = CURRENT_GERMAN_PRESENTING_FIXTURE;
+
+    const snapshot = inspectMeetDom();
+    expect(snapshot.state.selfPresentation).toBe("active");
+    expect(snapshot.controls.presentationActive?.element.getAttribute("aria-label")).toBe(
+      "Sie präsentieren"
+    );
+    expect(snapshot.controls.presentationStop).toBeUndefined();
+  });
+
+  it("recognises the English self-presentation status wording", () => {
+    document.body.innerHTML = `
+      <button aria-label="Leave call"></button>
+      <button aria-label="You are presenting"></button>
+    `;
+
+    expect(inspectMeetDom().state.selfPresentation).toBe("active");
+  });
+
+  it("does not mistake another participant's presentation for the user's own", () => {
+    document.body.innerHTML = `
+      <button aria-label="Leave call"></button>
+      <button aria-label="Erika präsentiert"></button>
+    `;
+
+    const snapshot = inspectMeetDom();
+    expect(snapshot.state.selfPresentation).toBe("unknown");
+    expect(snapshot.controls.presentationActive).toBeUndefined();
   });
 
   it("uses aria-pressed when Meet keeps a stable hand label", () => {
