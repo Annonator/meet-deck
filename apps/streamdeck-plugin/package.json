@@ -17,8 +17,8 @@
     "pack": "node ./scripts/pack.mjs"
   },
   "dependencies": {
-    "@elgato/streamdeck": "^2.1.2",
+    "@elgato/streamdeck": "^3.0.1",
     "@meet-deck/protocol": "0.1.0",
-    "ws": "^8.19.0"
+    "ws": "^8.22.0"
   }
 }

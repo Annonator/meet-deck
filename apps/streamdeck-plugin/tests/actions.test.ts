@@ -11,11 +11,13 @@ vi.mock("@elgato/streamdeck", () => ({
   }
 }));
 
-import type { KeyAction } from "@elgato/streamdeck";
+import type { KeyDownEvent, WillAppearEvent } from "@elgato/streamdeck";
 import type { MeetingStateMessage, ResultMessage } from "@meet-deck/protocol";
 
 import { ActionCoordinator, MicrophoneAction, PresentationAction } from "../src/actions.js";
 import type { BridgeServer, BridgeStatus } from "../src/bridge-server.js";
+
+type KeyAction = KeyDownEvent["action"];
 
 class FakeBridge {
   readonly sent: unknown[] = [];
@@ -135,6 +137,42 @@ describe("confirmed Stream Deck state", () => {
     await coordinator.trigger("microphone", key as unknown as KeyAction);
     expect(bridge.sent).toHaveLength(0);
     expect(key.showAlert).toHaveBeenCalledOnce();
+  });
+
+  it("renders confirmed state when a key appears", async () => {
+    bridge.emitStatus(true);
+    bridge.emitApplication(initialState);
+    await coordinator.refreshAll();
+    key.setImage.mockClear();
+    key.setState.mockClear();
+    key.setTitle.mockClear();
+
+    await microphone.onWillAppear({ action: key } as unknown as WillAppearEvent);
+
+    expect(key.setImage).toHaveBeenCalledExactlyOnceWith(undefined);
+    expect(key.setState).toHaveBeenCalledExactlyOnceWith(0);
+    expect(key.setTitle).toHaveBeenCalledExactlyOnceWith(undefined);
+  });
+
+  it.each(["dial", "Neo Infobar"])("ignores %s appearances and refreshes", async (controller) => {
+    const otherAction = {
+      isKey: vi.fn(() => false),
+      isDial: vi.fn(() => controller === "dial"),
+      isNeoInfobar: vi.fn(() => controller === "Neo Infobar"),
+      setTitle: vi.fn(async () => undefined),
+      setFeedback: vi.fn(async () => undefined)
+    };
+    (microphone.actions as unknown as unknown[]).push(otherAction);
+
+    await microphone.onWillAppear({ action: otherAction } as unknown as WillAppearEvent);
+    await coordinator.refreshAll();
+
+    expect(otherAction.isKey).toHaveBeenCalledTimes(2);
+    expect(otherAction.setTitle).not.toHaveBeenCalled();
+    expect(otherAction.setFeedback).not.toHaveBeenCalled();
+    expect(key.setImage).toHaveBeenCalledWith("imgs/status/offline.svg");
+    expect(key.setTitle).toHaveBeenCalledWith("Offline");
+    expect(bridge.sent).toHaveLength(0);
   });
 
   it("temporarily shows the macOS Meet shortcut when presentation needs user action", async () => {

@@ -17,6 +17,7 @@ const harness = vi.hoisted(() => ({
   bridge: undefined as FakeBridgeHarness | undefined,
   propertyInspectorListener: undefined as
     ((event: { readonly payload: unknown }) => void) | undefined,
+  connect: vi.fn<() => Promise<void>>(async () => undefined),
   getGlobalSettings: vi.fn(),
   setGlobalSettings: vi.fn(),
   sendToPropertyInspector: vi.fn(async () => undefined)
@@ -24,11 +25,12 @@ const harness = vi.hoisted(() => ({
 
 vi.mock("@elgato/streamdeck", () => ({
   default: {
+    connect: harness.connect,
     logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
-    settings: {
+    settings: Object.freeze({
       getGlobalSettings: harness.getGlobalSettings,
       setGlobalSettings: harness.setGlobalSettings
-    },
+    }),
     ui: {
       onSendToPlugin: vi.fn(
         (listener: (event: { readonly payload: unknown }) => void) =>
@@ -135,6 +137,8 @@ describe("PluginRuntime settings transactions", () => {
   beforeEach(() => {
     harness.bridge = undefined;
     harness.propertyInspectorListener = undefined;
+    harness.connect.mockReset();
+    harness.connect.mockResolvedValue(undefined);
     harness.getGlobalSettings.mockReset();
     harness.setGlobalSettings.mockReset();
     harness.sendToPropertyInspector.mockClear();
@@ -144,6 +148,21 @@ describe("PluginRuntime settings transactions", () => {
       pinnedOrigin: oldCredentials.pinnedOrigin
     });
     harness.setGlobalSettings.mockResolvedValue(undefined);
+  });
+
+  it("connects before reading stored settings with the SDK's default lifecycle", async () => {
+    const connecting = deferredVoid();
+    harness.connect.mockImplementationOnce(() => connecting.promise);
+    const starting = import("../src/plugin.js");
+
+    await vi.waitFor(() => expect(harness.connect).toHaveBeenCalledOnce());
+    expect(harness.getGlobalSettings).not.toHaveBeenCalled();
+    connecting.resolve();
+    await starting;
+
+    expect(harness.getGlobalSettings).toHaveBeenCalledOnce();
+    expect(bridge().setCredentials).toHaveBeenCalledWith(oldCredentials);
+    expect(bridge().start).toHaveBeenCalledExactlyOnceWith(53_421);
   });
 
   it("does not commit a rejected port candidate into a later credential write", async () => {
