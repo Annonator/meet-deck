@@ -81,7 +81,7 @@ Presentation key briefly shows `⌃⌘T`; press `Control+Command+T` in Meet to c
 
 1. Use a Mac running macOS 13 or newer, Stream Deck 7.1 or newer, Google Chrome 147 or newer, and a
    physical Stream Deck with LCD keys.
-2. Install the submitted `.streamDeckPlugin` artifact. Extract the matching v0.1.0 companion from
+2. Install the submitted `.streamDeckPlugin` artifact. Extract the matching v0.2.0 companion from
    the Maker-provided review ZIP, then load the extracted directory containing `manifest.json` as an
    unpacked Chrome extension. This draft does not claim Chrome Web Store availability.
 3. Add all four actions to LCD keys. Select one, open its property inspector, start pairing, and
@@ -103,16 +103,14 @@ Presentation key briefly shows `⌃⌘T`; press `Control+Command+T` in Meet to c
 7. Never include real meeting URLs, codes, titles, participant names, chat, captions, thumbnails,
    audio, video, or shared content in review evidence.
 
-### v0.1.0 release notes
+### v0.2.0 release notes
 
-Initial release of Meet Deck. Adds four Stream Deck key actions for microphone, camera, raised hand,
-and the local user's presentation, with confirmed Google Meet state feedback. If browser user action
-is needed, the Presentation key briefly shows `⌃⌘T`; press `Control+Command+T` in Meet to continue.
-Source selection remains in Chrome and macOS. Includes short-lived local pairing with the required
-Chrome companion, authenticated commands on `127.0.0.1`, and safe no-click behavior when no single
-supported meeting is available. Supports macOS 13+, Stream Deck 7.1+, Chrome 147+, and English or
-German Google Meet controls. The Stream Deck settings are English; the companion popup and
-onboarding follow Chrome's UI language in English or German.
+Updates the local Stream Deck integration to Elgato SDK 3.0.1 and WebSocket 8.22.0, with matching
+CLI, schema, and type updates. Migrates settings loading to the SDK's default message-ID lifecycle
+and preserves LCD-key controls and saved pairing recovery. Includes patched development dependencies
+and a full dependency audit gate in CI and release builds. Supports macOS 13+, Stream Deck 7.1+,
+Chrome 147+, and English or German Google Meet controls. Chrome still requires source selection and
+confirmation for screen sharing.
 
 ## Media inventory
 
