@@ -3,7 +3,6 @@ import { randomBytes } from "node:crypto";
 import streamDeck, {
   action,
   SingletonAction,
-  type KeyAction,
   type KeyDownEvent,
   type WillAppearEvent
 } from "@elgato/streamdeck";
@@ -18,6 +17,8 @@ import { type BridgeServer, type BridgeStatus } from "./bridge-server.js";
 
 export type Capability = "microphone" | "camera" | "hand" | "presentation";
 
+type MeetKeyAction = KeyDownEvent["action"];
+
 type VisualState =
   | { readonly kind: "confirmed"; readonly state: 0 | 1; readonly title?: string }
   | {
@@ -30,7 +31,7 @@ interface PendingCommand {
   readonly id: string;
   readonly capability: Capability;
   readonly target: boolean;
-  readonly source: KeyAction;
+  readonly source: MeetKeyAction;
   readonly timer: NodeJS.Timeout;
 }
 
@@ -107,7 +108,7 @@ export abstract class MeetAction extends SingletonAction {
     await Promise.allSettled(updates);
   }
 
-  async render(actionInstance: KeyAction, state: VisualState): Promise<void> {
+  async render(actionInstance: MeetKeyAction, state: VisualState): Promise<void> {
     if (state.kind === "confirmed") {
       await actionInstance.setImage(undefined);
       await actionInstance.setState(state.state);
@@ -165,7 +166,7 @@ export class ActionCoordinator {
     this.#actions.set(meetAction.capability, meetAction);
   }
 
-  async trigger(capability: Capability, source: KeyAction): Promise<void> {
+  async trigger(capability: Capability, source: MeetKeyAction): Promise<void> {
     const state = this.#state;
     if (
       !this.#connected ||
@@ -209,7 +210,7 @@ export class ActionCoordinator {
     await this.refreshAll();
   }
 
-  async renderOne(capability: Capability, actionInstance: KeyAction): Promise<void> {
+  async renderOne(capability: Capability, actionInstance: MeetKeyAction): Promise<void> {
     await this.#actions.get(capability)?.render(actionInstance, this.#visualState(capability));
   }
 
@@ -339,7 +340,7 @@ export class ActionCoordinator {
     }
   }
 
-  #showAlert(source: KeyAction): void {
+  #showAlert(source: MeetKeyAction): void {
     void source.showAlert().catch(() => {
       // The action may have disappeared before asynchronous feedback completed.
     });

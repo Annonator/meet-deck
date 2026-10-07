@@ -1,8 +1,8 @@
 Meet Deck includes the following third-party software in its bundled plugin.
 
 -------------------------------------------------------------------------------
-@elgato/streamdeck 2.1.2
-@elgato/schemas 0.4.15
+@elgato/streamdeck 3.0.1
+@elgato/schemas 0.5.1
 @elgato/utils 0.6.0
 
 MIT License
@@ -54,7 +54,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 -------------------------------------------------------------------------------
-ws 8.21.3
+ws 8.22.0
 
 Copyright (c) 2011 Einar Otto Stangvik <einaros@gmail.com>
 Copyright (c) 2013 Arnout Kazemier and contributors

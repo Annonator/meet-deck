@@ -134,5 +134,5 @@ betätigt werden.
 ## Kompatibilitätsgrenze
 
 Version 1 unterstützt macOS, Chrome ab 147, Stream Deck ab 7.1 und LCD-Tasten. Andere
-Chromium-Browser, Windows, Drehregler, Touch Strip sowie andere Meet- Sprachen als Englisch und
-Deutsch gehören nicht zum anfänglichen Vertrag.
+Chromium-Browser, Windows, Drehregler, Touch Strip, Neo-Infobar-Aktionen sowie andere Meet- Sprachen
+als Englisch und Deutsch gehören nicht zum anfänglichen Vertrag.

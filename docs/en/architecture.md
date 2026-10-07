@@ -131,5 +131,5 @@ fallback. Once the user's own presentation is active, the extension may activate
 ## Compatibility boundary
 
 Version 1 targets macOS, Chrome 147 or newer, Stream Deck 7.1 or newer, and LCD keys. Other Chromium
-browsers, Windows, dials, touch strip, and non-English/ non-German Meet variants are outside the
-initial compatibility contract.
+browsers, Windows, dials, touch strip, Neo Infobar actions, and non-English/ non-German Meet
+variants are outside the initial compatibility contract.

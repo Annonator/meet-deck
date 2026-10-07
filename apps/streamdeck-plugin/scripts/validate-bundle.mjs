@@ -587,8 +587,8 @@ export async function validateSourceBundle() {
     "Supported OS matrix must be macOS 13 or newer."
   );
   invariant(
-    pluginPackage.dependencies?.["@elgato/streamdeck"]?.startsWith("^2."),
-    "SDK 3 requires @elgato/streamdeck v2+."
+    pluginPackage.dependencies?.["@elgato/streamdeck"]?.startsWith("^3."),
+    "The reviewed plugin bundle requires @elgato/streamdeck v3."
   );
   invariant(
     pluginPackage.engines?.node === ">=24",
