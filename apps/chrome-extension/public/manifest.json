@@ -3,7 +3,7 @@
   "name": "__MSG_app_name__",
   "short_name": "__MSG_app_short_name__",
   "description": "__MSG_app_description__",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": "annonator",
   "default_locale": "en",
   "minimum_chrome_version": "147",

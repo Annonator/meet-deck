@@ -1,6 +1,6 @@
 {
   "name": "@meet-deck/streamdeck-plugin",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "engines": {
@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@elgato/streamdeck": "^3.0.1",
-    "@meet-deck/protocol": "0.1.0",
+    "@meet-deck/protocol": "0.2.0",
     "ws": "^8.22.0"
   }
 }

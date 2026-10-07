@@ -1,6 +1,6 @@
 {
   "name": "@meet-deck/chrome-extension",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "author": "annonator",
@@ -18,7 +18,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@meet-deck/protocol": "0.1.0"
+    "@meet-deck/protocol": "0.2.0"
   },
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^16.0.3",

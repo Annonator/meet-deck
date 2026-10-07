@@ -23,7 +23,7 @@ Meet behavior.
 1. Build the exact candidate with `npm run pack`. Install its `.streamDeckPlugin` artifact and load
    the matching companion extension in **Google Chrome**, not Microsoft Edge.
 2. Use Stream Deck 7.1 or newer and a physical Stream Deck with LCD keys. Stream Deck + footage must
-   show keys only; Meet Deck v0.1.0 does not support its dials or touch strip.
+   show keys only; Meet Deck v0.2.0 does not support its dials or touch strip.
 3. Pair before recording. Keep the pairing key and companion popup/onboarding out of frame. The
    Stream Deck property inspector and key labels are English.
 4. Use an English-language Chrome profile and a dedicated Google Meet with synthetic identities and
