@@ -36,6 +36,9 @@ jobs:
       - name: Install exact dependencies
         run: npm ci
 
+      - name: Audit dependencies
+        run: npm run audit:dependencies
+
       - name: Check formatting
         run: npm run format:check
 

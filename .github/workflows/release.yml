@@ -58,6 +58,9 @@ jobs:
       - name: Install exact dependencies
         run: npm ci
 
+      - name: Audit dependencies
+        run: npm run audit:dependencies
+
       - name: Run release gates
         run: npm run check
 
