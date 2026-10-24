@@ -595,11 +595,11 @@ export async function validateSourceBundle() {
     "Plugin package Node engine must match manifest Node.js 24."
   );
   invariant(
-    rootPackage.engines?.node === ">=24.13.1 <25",
+    rootPackage.engines?.node === ">=24.22.1 <25",
     "Root Node engine must stay within Node.js 24."
   );
   invariant(
-    (await readFile(path.join(WORKSPACE_DIRECTORY, ".nvmrc"), "utf8")).trim() === "24.13.1",
+    (await readFile(path.join(WORKSPACE_DIRECTORY, ".nvmrc"), "utf8")).trim() === "24.22.1",
     ".nvmrc must match the reviewed Node.js 24 minimum."
   );
 

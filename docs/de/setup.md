@@ -6,7 +6,11 @@
 - Elgato Stream Deck Desktop-App 7.1 oder neuer
 - Google Chrome 147 oder neuer
 - ein Stream Deck mit LCD-Tasten (die Tasten des Stream Deck + werden unterstützt)
-- für Source-Builds: Node.js ab 24.13.1 innerhalb Hauptversion 24 und npm 11
+- für Source-Builds: Node.js ab 24.22.1 innerhalb Hauptversion 24 und npm 11
+
+Stream Deck verwaltet die Node.js-Laufzeit des Plugins separat. Automatische Laufzeitupdates müssen
+zugelassen sein; verwende Node.js ab 24.22.1 innerhalb der 24.x-Reihe. Die Installation von Meet
+Deck oder ein Node.js-Update im Terminal aktualisiert diese Laufzeit nicht.
 
 Plugin und Erweiterung müssen aus demselben Release stammen. Beide verwenden Protokollversion 1;
 vermischte Entwicklungsstände können inkompatibel sein.
