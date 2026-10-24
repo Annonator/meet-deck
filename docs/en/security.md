@@ -1,5 +1,31 @@
 # Security and threat boundaries
 
+## October 2026 dependency maintenance
+
+Version 0.2.1 builds and tests with Node.js 24.22.1, including the fixes in the
+[October 21 Node.js security release](https://nodejs.org/en/blog/vulnerability/october-2026-security-releases).
+The reviewed plugin paths do not decompress Brotli input or make remote HTTP, TLS, or DNS requests.
+The loopback bridge disables WebSocket compression. Build tools that fetch remote resources still
+need the patched runtime.
+
+Stream Deck supplies the plugin's Node.js executable independently of npm and `.nvmrc`. Keep its
+runtime updates enabled and verify Node.js 24.22.1 or newer in the 24.x line. Elgato documents
+[automatic runtime updates from Stream Deck 7.1](https://docs.elgato.com/streamdeck/sdk/introduction/plugin-environment/).
+Installing this plugin alone does not replace the host runtime.
+
+The SDK's utility package still declares Zod 3, but imports the `zod/v4-mini` API. A scoped override
+selects Zod 4.6.7 for that package to address
+[CVE-2023-54404](https://github.com/advisories/GHSA-mrhx-c7xc-m3w5), whose advisory was updated on
+October 23. This removes an affected bundled dependency; a remotely exploitable path through Meet
+Deck's own bounded protocol parser was not established. Dependency regression tests check early
+rejection of oversized constrained arrays and sets, plus the SDK's option and JSON-RPC schemas.
+Remove the override when the SDK's supported dependency range includes a patched Zod release.
+
+Development dependencies also incorporate the Vite/Vitest, Undici, fast-uri, and
+serialize-javascript security updates available on October 24. TypeScript remains at 6.0.3 because
+the latest `typescript-eslint` supports versions below 6.1; Node type definitions remain on the Node
+24 line.
+
 ## Security goals
 
 Meet Deck is designed to make a narrow set of meeting-control actions auditable without exposing
